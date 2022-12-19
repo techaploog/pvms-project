@@ -11,7 +11,7 @@ const server = net.createServer((socket)=>{
 
     socket.on('data',(buffer)=>{
         let receiveData = buffer.toString('utf-8');
-        console.log(`Receive : ${receiveData}`);
+        console.log(` > Receive : ${receiveData}`);
 
         let replyData = 'OK';
         socket.write(replyData);
