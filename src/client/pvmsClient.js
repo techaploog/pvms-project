@@ -6,15 +6,15 @@ const {extractData} = require('./data');
 
 const destination = {
     host:process.env.PVMS_DESC_IP,
-    port:process.env.PVMS_DESC_PORT,
-    localPort:process.env.PVMS_LOCAL_PORT,
+    port:Number(process.env.PVMS_DESC_PORT),
+    localPort:Number(process.env.PVMS_LOCAL_PORT),
 };
-const dataInterval = 30000;
+const dataFrequency = 30000;
 
 const client = net.connect(destination);
-
 client.on('connect', () => {
-    console.log(` + START!! (send data every : ${dataInterval/1000} secondes)`)
+    console.log(`Connected to PVMS server ... `)
+    console.log(` + START!! (send data every : ${dataFrequency/1000} secondes)`)
 
     const intervalID = setInterval(async () => {
         const data = await extractData();
@@ -26,7 +26,7 @@ client.on('connect', () => {
         // send data to server
         client.write(firstRow.join('-').toString());
 
-    },dataInterval);
+    },dataFrequency);
 
     client.on('close',()=>{
         console.log(` - Disconnected from server side.`);
@@ -34,8 +34,12 @@ client.on('connect', () => {
     })
 
     client.on('error',()=>{
-        console.log(` - Server side connection error.`);
         clearInterval(intervalID);
     })
+});
+
+
+client.on('error', () => {
+    console.log(` ! Connection error`);
 });
 
