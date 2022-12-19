@@ -19,6 +19,7 @@ Make sure to set all of these ENVIRONEMENT variables.
 PVMS_SRC_URL=""
 PVMS_DESC_IP=""
 PVMS_DESC_PORT=""
+PVMS_LOCAL_PORT=""
 
 #for server
 PVMS_SERV_PORT=""

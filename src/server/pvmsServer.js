@@ -20,6 +20,10 @@ const server = net.createServer((socket)=>{
     socket.on('end',()=>{
         console.log(` - Close Connection from IP : ${clientIP} , PORT = ${clientPORT}`);
     });
+
+    socket.on('error',()=>{
+        console.log(` - Client IP : ${clientIP} , PORT = ${clientPORT} connection error.`);
+    })
 });
 
 server.listen(SERVER_PORT,()=>{
