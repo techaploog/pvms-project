@@ -1,3 +1,8 @@
+#project
+*.db
+test/
+*.test.js
+
 # Logs
 logs
 *.log
