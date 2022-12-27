@@ -1,7 +1,8 @@
 # PVMS Project
 
 ## Status
-   MVP :  `completed`.
+   Client side : `prototype`.
+   Server side : `developing..`.
 
 ## Reqirements
    [NodeJs](https://nodejs.org/en/) : `^19.0.0`.
