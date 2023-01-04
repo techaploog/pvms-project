@@ -23,30 +23,37 @@ async function startDatabaseServer() {
   }
 }
 
-async function setCleaningInterval(nDays=30){
+async function setCleaningInterval (nDays=30) {
   if (typeof(nDays) !== "number" || nDays <=0 ){
     console.log(`[ERROR]\t'nDays' parameter must be number which greater than 0.`);
     return false;
   }
   
+  let counter = nDays;
   const dayMS = 24 * 3600 * 1000;
 
   console.log(`[INIT]\tSet auto cleaning every\t: ${nDays} days`);
   
   setInterval( async ()=>{
-    const oldDate = new Date(Number(new Date()) - (nDays * dayMS));
-    const oldDateStr = oldDate.toISOString().split('T')[0];
+    if (counter <= 0){
+      let oldDate = new Date(Number(new Date()) - (nDays * dayMS));
+      let oldDateStr = oldDate.toISOString().split('T')[0];
+      
+      console.log(`[INFO]\t Start clearning...\t : ${oldDateStr}.`);
+      
+      let deletedRows = await dbDeleteOlder(oldDateStr);
     
-    console.log(`[INFO]\t Start clearning...\t : ${oldDateStr}.`);
-    
-    const deletedRows = await dbDeleteOlder(oldDateStr);
+      console.log(`[INFO]\t Deleted total\t\t : ${deletedRows.length} rows.`);
   
-    console.log(`[INFO]\t Deleted total\t\t : ${deletedRows.length} rows.`);
+      deletedRows.forEach((row)=>{
+        console.log('\t-> ',row.id,row.serverTime);
+      });
 
-    deletedRows.forEach((row)=>{
-      console.log('\t-> ',row.id,row.serverTime);
-    });
-  }, nDays * dayMS );
+      counter = nDays;
+    }else{
+      counter--;
+    }
+  }, (dayMS) );
 
   return true;
   
