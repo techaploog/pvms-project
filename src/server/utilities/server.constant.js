@@ -18,11 +18,11 @@ const RECEIVING_CODE = {
 const REPLY_CODE = {
     "00" : "normal",
     "13" : "dataError",
-    "14" : "fullDataError",
+    "14" : "dataFullError",
     "75" : "serialError",
     "76" : "lengthError",
     "90" : "vehicleSeqError",
-    "91" : "dataLengthError",
+    "91" : "vehicleDataLengthError",
 }
 
 module.exports = {

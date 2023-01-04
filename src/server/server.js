@@ -2,9 +2,12 @@ const net = require('net');
 
 require('dotenv').config();
 
+const {startDatabaseServer,setCleaningInterval} = require('./database/db.controller'); 
+const {initListenerState,} = require('./pvms.controller');
+
 const SERVER_PORT = Number(process.env.PVMS_SERV_PORT);
 
-const server = net.createServer((socket)=>{
+const socketServer = net.createServer((socket)=>{
     const clientIP = socket.remoteAddress.split(':').slice(-1);
     const clientPORT = socket.remotePort;
     console.log(` + Connection from IP : ${clientIP} , PORT : ${clientPORT}`);
@@ -30,6 +33,18 @@ const server = net.createServer((socket)=>{
     })
 });
 
-server.listen(SERVER_PORT,()=>{
-    console.log(`PVMS server start listening on PORT : ${SERVER_PORT}...`);
-})
+async function startPVMS (continueMode=true) {
+    console.log('- - - - - - - - -')
+    await startDatabaseServer();
+    
+    if (continueMode){
+        await initListenerState();
+    }
+
+    console.log(`\n- - - - - - - - -`);
+    socketServer.listen(SERVER_PORT,()=>{
+        console.log(`PVMS {Socket Server} listening on PORT : ${SERVER_PORT}...`);
+    });
+}
+
+startPVMS();

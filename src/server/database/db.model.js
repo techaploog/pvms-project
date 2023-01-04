@@ -9,7 +9,7 @@ const initServerState = {
 
 let currentState = initServerState;
 
-const DB_FILE_NAME = process.env.INTERNAL_DB_FILE;
+const DB_FILE_NAME = process.env.PVMS_SERV_DB_FILE;
 const DB_PATH = path.join(__dirname, DB_FILE_NAME);
 const tableName = "dataLogs";
 
@@ -74,17 +74,20 @@ function dbCheckFile() {
 }
 
 
-// RETURN THE LATEST ROW OF DATA
-async function dbLatestRow() {
+// GET THE LATEST ROW OF DATA
+async function dbLatestRow(trackPoint=null) {
   if (! currentState.status) {
     return false
   }
 
   const latest = await new Promise((resolve,rejects)=>{
-    const sql = `SELECT * FROM ${tableName} ORDER BY serverTime DESC LIMIT 1;`
+    const sql = `SELECT * FROM ${tableName} ` + 
+      `${trackPoint ? `WHERE trackPoint = '${trackPoint}' `: ""}` +
+      `ORDER BY serverTime DESC LIMIT 1;`
+
     currentState.db.get(sql,(error,rows) => {
       if (error) {
-        resolve([]);
+        resolve(undefined);
       } else {
         resolve(rows);
       }
@@ -119,6 +122,7 @@ async function dbInsert(id, trackPoint, rawData) {
   return result;
 }
 
+// delete data which are older than "dateString"
 async function dbDeleteOlder(dateString){
 
   if (typeof(dateString) !== "string"){

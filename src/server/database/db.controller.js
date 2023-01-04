@@ -15,7 +15,7 @@ async function startDatabaseServer() {
   }
 
   if (dbStatus) {
-    console.log(`[INIT]\tDatabase \t: READY.`);
+    console.log(`[INIT]\tInternal Database \t: READY.`);
     return true;
   } else {
     console.log(`[ERROR]\tCannot connect to Database.`);
