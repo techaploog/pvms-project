@@ -17,14 +17,16 @@ client.on('connect', () => {
     console.log(` + START!! (send data every : ${dataFrequency/1000} secondes)`)
 
     const intervalID = setInterval(async () => {
-        const data = await extractData();
-        const firstRow = data[0].splice(0,2);
+        //TODO:
+        //
+        // const data = await extractData();
+        // const firstRow = data[0].splice(0,2);
 
-        // log to console
-        console.log(` > Send : ${firstRow}`);
+        // // log to console
+        // console.log(` > Send : ${firstRow}`);
 
-        // send data to server
-        client.write(firstRow.join('-').toString());
+        // // send data to server
+        // client.write(firstRow.join('-').toString());
 
     },dataFrequency);
 
