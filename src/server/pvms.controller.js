@@ -39,7 +39,7 @@ async function receivingData(message, useDB = true) {
 
   const printError = (statusCode) => {
     result.statusCode = statusCode;
-    console.log(`[ERROR]\t${statusCode}\t${REPLY_CODE[statusCode]}`);
+    console.log(`[ERROR]   Code: ${statusCode}   - ${REPLY_CODE[statusCode]}`);
     return result;
   };
 
@@ -94,13 +94,14 @@ async function receivingData(message, useDB = true) {
 
     // update serverState
     serverState['serialNo'] = Number(msg.serialNo);
-    serverState[tp] = newBC;
+    serverState[tp] = Number(msg.bcSeq);
 
     // No error print success message and return result
     let resMsg =
-      `[${serverState.resetMode ? "res-mode" : "normal"}]\tSuccess\t` +
-      `serial:${String(newSerial).padStart(4, 0)} , ` +
-      `SEQ:${String(newBC).padStart(3, 0)}`;
+      `[${serverState.resetMode ? "ALL" : "NORM"}]   Success   ` +
+      `[ serial: ${String(serverState.serialNo).padStart(4, 0)} , ` +
+      `TP: ${tp} , ` +
+      `SEQ: ${String(serverState[tp]).padStart(3, 0)} ]`;
 
     console.log(resMsg);
 
