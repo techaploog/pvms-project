@@ -10,18 +10,22 @@ const TRACK_POINTS = process.env.PVMS_SERV_TP_LIST.split(",");
 
 let serverState = {};
 
-async function initListenerState(resetMode = fase) {
+async function initListenerState(resetMode = false) {
+
+  // init serialNo
+  let resp = await pvmsTrackingStatus();
+  serverState['resetMode'] = resetMode;
+  serverState['serialNo'] = resp.serialNo;
+  
+  // init bcSeq for each trackPoint
   for (i = 0; i < TRACK_POINTS?.length; i++) {
     let tp = TRACK_POINTS[i];
-    let resp = {serialNo:undefined,bcSeq:undefined};
-    
-    if (!resetMode)
-      resp = await pvmsTrackingStatus(tp);
-
-    serverState[tp] = resp;
+    let resp = await pvmsTrackingStatus(tp);
+    serverState[tp] = resp.bcSeq;
   }
 
   console.log(`[INIT]\tServer State`);
+  // console.log(`\t- serial :`,serverState.serialNo);
   Object.keys(serverState).map((tp) => {
     console.log(`\t- ${tp} :`, serverState[tp]);
   });
@@ -52,27 +56,30 @@ async function receivingData(message, useDB = true) {
     if (!checkMsgLenght(message)) {
       return printError("76");
     }
-    
-    let newSerial = serverState[tp].serialNo;
-    let newBC = serverState[tp].bcSeq;
 
-    // check message serial number
-    // skip when newSerial is undefined
-    if (newSerial) {
-      newSerial = newSerial + 1 >= 10000 ? 1 : newSerial + 1;
+    let newSerial = serverState['serialNo'];
+    let newBC = serverState[tp];
 
-      if (newSerial !== Number(msg.serialNo)) {
-        return printError("75");
-      }
-    }
 
-    // check bc sequence
-    // skip when newBC is undefined
-    if (newBC) {
-      newBC = newBC + 1 >= 1000 ? 0 : newBC + 1;
+    if (!serverState.resetMode){
+      // check message serial number
+      // skip when newSerial is undefined
+      if (newSerial) {
+        newSerial = newSerial + 1 >= 10000 ? 1 : newSerial + 1;
   
-      if (newBC !== Number(msg.bcSeq)) {
-        return printError("90");
+        if (newSerial !== Number(msg.serialNo)) {
+          return printError("75");
+        }
+      }
+  
+      // check bc sequence
+      // skip when newBC is undefined
+      if (newBC) {
+        newBC = newBC + 1 >= 1000 ? 0 : newBC + 1;
+    
+        if (newBC !== Number(msg.bcSeq)) {
+          return printError("90");
+        }
       }
     }
 
@@ -80,20 +87,18 @@ async function receivingData(message, useDB = true) {
     // insert data into database ()
     if (useDB) {
       let instRes = await pvmsInsertData(newSerial, message);
-      if (!instRes) {
+      if (!(serverState.resetMode || instRes) ) {
         return printError("14");
       }
     }
 
     // update serverState
-    serverState[tp] = {
-      serialNo: newSerial,
-      bcSeq: newBC,
-    };
+    serverState['serialNo'] = Number(msg.serialNo);
+    serverState[tp] = newBC;
 
     // No error print success message and return result
     let resMsg =
-      `[received]\tSuccess\t` +
+      `[${serverState.resetMode ? "res-mode" : "normal"}]\tSuccess\t` +
       `serial:${String(newSerial).padStart(4, 0)} , ` +
       `SEQ:${String(newBC).padStart(3, 0)}`;
 
