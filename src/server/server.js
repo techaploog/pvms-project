@@ -42,13 +42,12 @@ const socketServer = net.createServer((socket) => {
   });
 });
 
-async function startPVMS(continueMode = true) {
+async function startPVMS(resetMode = false) {
   console.log("- - - - - - - - -");
 
   await startDatabaseServer();
   await setCleaningInterval(30);
-
-  if (continueMode) await initListenerState();
+  await initListenerState(resetMode);
 
   console.log(`\n- - - - - - - - -`);
   socketServer.listen(SERVER_PORT, () => {
