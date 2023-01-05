@@ -3,7 +3,7 @@
 ## Status
    Client side : `Prototype`.
 
-   Server side : `Developing..`.
+   Server side : `Completed`.
 
 ## Reqirements
    [NodeJs](https://nodejs.org/en/) : `^19.0.0`.
@@ -27,11 +27,11 @@ PVMS_LOCAL_PORT=""
 # for server
 # data listener side
 PVMS_SERV_PORT=""
-PVMS_SERV_TP_LIST= #TP1,TP2,TP3
+PVMS_SERV_TP_LIST="" #"TP1,TP2,TP3"
 PVMS_SERV_DB_FILE=""
 
 # for API server
-PVMS_HTTP_PORT=""
+PVMS_API_PORT=""
 ```
 
 ## Start Client Guide

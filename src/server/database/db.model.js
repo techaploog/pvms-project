@@ -149,11 +149,25 @@ async function dbDeleteOlder(dateString){
   return rows;
 }
 
+async function dbTrackPoints() {
+
+  const sqlstr = `SELECT DISTINCT trackPoint FROM ${tableName}`
+  
+  const dataRows = await new Promise((resolve,rejects) => {
+    currentState.db.all(sqlstr, (error,rows) => {
+      resolve(rows);
+    })
+  });
+
+  return dataRows;
+}
+
 module.exports = {
-  dbCheckFile,
   dbInit,
-  dbConnect,
   dbInsert,
+  dbConnect,
+  dbCheckFile,
   dbLatestRow,
+  dbTrackPoints,
   dbDeleteOlder,
 };

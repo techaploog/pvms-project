@@ -1,6 +1,5 @@
 const { pvmsInsertData, pvmsTrackingStatus } = require("./pvms.model");
 const {
-  getTrackPoint,
   getJSON,
   checkMsgLenght,
 } = require("./utilities/server.utilities");
@@ -9,13 +8,17 @@ const { REPLY_CODE } = require("./utilities/server.constant");
 const TRACK_POINTS = process.env.PVMS_SERV_TP_LIST.split(",");
 
 let serverState = {};
+let resetAllowance = 0;
 
-async function initListenerState(resetMode = false) {
+async function initListenerState(resetMode = false, allowance = 100) {
 
   // init serialNo
   let resp = await pvmsTrackingStatus();
   serverState['resetMode'] = resetMode;
   serverState['serialNo'] = resp.serialNo;
+
+  if(resetMode)
+    resetAllowance = allowance;
   
   // init bcSeq for each trackPoint
   for (i = 0; i < TRACK_POINTS?.length; i++) {
@@ -81,6 +84,10 @@ async function receivingData(message, useDB = true) {
           return printError("90");
         }
       }
+    } else {
+      resetAllowance --
+      if (resetAllowance <= 0)
+        await initListenerState(false,0);
     }
 
     // if useDB

@@ -1,52 +1,26 @@
-const net = require("net");
-
 require("dotenv").config();
+
+global.__basedir = __dirname;
 
 const {
   startDatabaseServer,
   setCleaningInterval,
 } = require("./database/db.controller");
-const { initListenerState, receivingData } = require("./pvms.controller");
+const { initListenerState } = require("./apps/socket/pvms.controller");
+
+const socketServer = require("./apps/socket/pvms.server");
+const apiServer = require("./apps/http/api.server");
 
 const SERVER_PORT = Number(process.env.PVMS_SERV_PORT);
+const API_PORT = Number(process.env.PVMS_API_PORT);
 
-const socketServer = net.createServer((socket) => {
-  const clientIP = socket.remoteAddress.split(":").slice(-1);
-  const clientPORT = socket.remotePort;
-  console.log(` + Connection from IP : ${clientIP} , PORT : ${clientPORT}`);
-
-  socket.on("data", async (buffer) => {
-    let receiveData = buffer.toString("utf-8");
-    let result = await receivingData(receiveData);
-    let repMsg = receiveData.split(0, 12);
-
-    repMsg =
-      repMsg + "0" + "00000" + "00" + result.statusCode
-        ? result.statusCode
-        : "14";
-
-    // reply to sender
-    socket.write(repMsg);
-  });
-
-  socket.on("end", () => {
-    console.log(
-      ` - Close Connection from IP : ${clientIP} , PORT : ${clientPORT}`
-    );
-  });
-
-  socket.on("error", () => {
-    console.log(
-      ` ! Client IP : ${clientIP} , PORT : ${clientPORT} connection error.`
-    );
-  });
-});
-
-async function startPVMS(resetMode = false) {
+async function startServer(resetMode = false) {
   console.log("- - - - - - - - -");
 
   await startDatabaseServer();
   await setCleaningInterval(30);
+
+  // init socket listener state
   await initListenerState(resetMode);
 
   console.log(`\n- - - - - - - - -`);
@@ -54,7 +28,11 @@ async function startPVMS(resetMode = false) {
     console.log(`PVMS {Socket Server} listening on PORT : ${SERVER_PORT}...`);
   });
 
+  apiServer.listen(API_PORT, () => {
+    console.log(`PVMS {API Server} listening on PORT : ${API_PORT}...`);
+  });
+
   return true;
 }
 
-startPVMS();
+startServer();

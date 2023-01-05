@@ -1,4 +1,4 @@
-const {RECEIVING_CODE,REPLY_CODE} = require('./server.constant');
+const {RECEIVING_CODE} = require('./server.constant');
 
 function checkMsgLenght (message) {
     try {

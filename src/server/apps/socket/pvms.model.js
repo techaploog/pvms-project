@@ -1,4 +1,4 @@
-const { dbInsert, dbLatestRow } = require("./database/db.model");
+const { dbInsert, dbLatestRow } = require("../../database/db.model");
 const { getTrackPoint, getJSON } = require("./utilities/server.utilities");
 
 async function pvmsInsertData(idx, message) {

@@ -5,10 +5,8 @@
   "scripts": {
     "client": "node src/client/client.js",
     "server": "node src/server/server.js",
-
     "watchClient": "nodemon src/client/client.js",
     "watchServer": "nodemon src/server/server.js",
-
     "testdb": "nodemon src/server/database/db.test.js"
   },
   "repository": {
@@ -25,7 +23,10 @@
   "dependencies": {
     "axios": "^1.2.1",
     "cheerio": "^1.0.0-rc.12",
+    "cors": "^2.8.5",
     "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "helmet": "^6.0.1",
     "sqlite3": "^5.1.4"
   },
   "devDependencies": {
