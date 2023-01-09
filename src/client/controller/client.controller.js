@@ -1,10 +1,23 @@
 const axios = require('axios');
 
-const {extractData} = require('../models/client.model');
+const {extractData, getLastALCTracking} = require('../models/client.model');
 
 async function makeCalculation(){
-    const scrapDAta = await extractData();
-    return {data:scrapDAta[0]};
+    const trackData = await getLastALCTracking();
+
+    if (!trackData?.isNew){
+        return {
+            success:false,
+            numVeh:undefined
+        }
+    }
+
+    const scrapData = await extractData();
+
+    // TODO:
+    // calculate and return number here
+
+    return {data:scrapData[0]};
 }
 
 module.exports = {

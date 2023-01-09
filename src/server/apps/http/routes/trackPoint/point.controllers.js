@@ -26,7 +26,7 @@ async function httpGetLastest(req,res) {
         return res.status(200).json(repData);
 
     }else {
-        return res.status(400).json({msg:`No data for ${tp}`})
+        return res.status(400).json({details:`No data for ${tp}`})
     }
 
 }
