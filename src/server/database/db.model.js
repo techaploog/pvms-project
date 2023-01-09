@@ -104,7 +104,7 @@ async function dbInsert(id, trackPoint, rawData) {
   const result = await new Promise((resolve, rejects) => {
     const sql = `INSERT INTO ${tableName} VALUES(
             '${id}',
-            datetime('now'),
+            datetime('now','localtime'),
             '${trackPoint}',
             '${rawData}'
         );`;

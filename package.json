@@ -7,8 +7,7 @@
     "server": "node src/server/server.js",
     "watchClient": "nodemon src/client/client.js",
     "watchServer": "nodemon src/server/server.js",
-    "testdb": "nodemon src/server/database/db.test.js",
-    "testClient": "nodemon src/client/client.test.js"
+    "testClient": "nodemon src/client/client-sample.js"
   },
   "repository": {
     "type": "git",

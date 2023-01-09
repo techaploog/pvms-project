@@ -1,7 +1,7 @@
 # PVMS Project
 
 ## Status
-   Client side : `Prototype`.
+   Client side : `Developing..`.
 
    Server side : `Completed`.
 
