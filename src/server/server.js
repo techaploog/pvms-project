@@ -1,5 +1,7 @@
 require("dotenv").config();
 
+const { Command } = require("commander");
+
 global.__basedir = __dirname;
 
 const {
@@ -14,14 +16,24 @@ const apiServer = require("./apps/http/api.server");
 const SERVER_PORT = Number(process.env.PVMS_SERV_PORT);
 const API_PORT = Number(process.env.PVMS_API_PORT);
 
-async function startServer(resetMode = false) {
+const program = new Command();
+program
+.option("-r, --reset <boolean>", "start server and receive all message",false)
+.option("-a, --allowance <number>", "number of records of RESET mode","100");
+
+const args = program.parse().opts();
+
+async function startServer() {
   console.log("- - - - - - - - -");
 
   await startDatabaseServer();
   await setCleaningInterval(30);
 
   // init socket listener state
-  await initListenerState(resetMode);
+  if (args.reset){
+    console.log(`[INIT] "Reset Mode" : receive all message for ${args.allowance} messages.`)
+  }
+  await initListenerState(args.reset,Number(args.allowance));
 
   console.log(`\n- - - - - - - - -`);
   socketServer.listen(SERVER_PORT, () => {

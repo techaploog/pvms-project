@@ -33,10 +33,10 @@ const test = async () => {
 
     // let tcDataDate = new Date(trackData.data?.serverTime);
     // console.log(tcDataDate);
-    let lastSeq = trackData.data.bcSeq;
+    let lastSeq = trackData ? trackData.data.bcSeq : undefined;
     let trimSeq = scrapData[0][1].slice(2);
 
-    const msg = `[DATA] ALC-SEQ:${lastSeq}, TRIM-SEQ:${trimSeq} T-A:${seqDiff(lastSeq,trimSeq)}`
+    const msg = `[DATA] ALC-SEQ:${lastSeq}, TRIM-SEQ:${trimSeq} T-A:${lastSeq !== undefined ? seqDiff(lastSeq,trimSeq):undefined}`
     console.log(msg);
 }
 

@@ -97,7 +97,6 @@ async function dbLatestRow(trackPoint=null) {
   return latest;
 }
 
-
 // INSERT DATA INTO DB
 async function dbInsert(id, trackPoint, rawData) {
   let db = currentState.db;

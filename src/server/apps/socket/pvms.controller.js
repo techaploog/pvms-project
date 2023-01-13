@@ -19,7 +19,9 @@ async function initListenerState(resetMode = false, allowance = 100) {
 
   if(resetMode)
     resetAllowance = allowance;
-  
+  else
+    resetAllowance = 0;
+
   // init bcSeq for each trackPoint
   for (i = 0; i < TRACK_POINTS?.length; i++) {
     let tp = TRACK_POINTS[i];
