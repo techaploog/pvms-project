@@ -161,10 +161,26 @@ async function dbTrackPoints() {
   return dataRows;
 }
 
+async function dbRunQuery(selectString,conditionString=undefined){
+  const sqlstr =`SELECT ${selectString} FROM ${tableName} ${conditionString ? conditionString : ""};`;
+
+  return new Promise((resolve,rejects) => {
+    currentState.db.all(sqlstr, (error,rows) => {
+      if(error){
+        rejects(error);
+      }
+      
+      resolve(rows);
+    });
+  });
+
+}
+
 module.exports = {
   dbInit,
   dbInsert,
   dbConnect,
+  dbRunQuery,
   dbCheckFile,
   dbLatestRow,
   dbTrackPoints,
