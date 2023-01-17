@@ -8,16 +8,12 @@ const socketServer = net.createServer((socket) => {
   console.log(` + Connection from IP : ${clientIP} , PORT : ${clientPORT}`);
 
   socket.on("data", async (buffer) => {
-    let receiveData = buffer.toString("utf-8");
-    let result = await receivingData(receiveData);
-    let repHeader = receiveData.slice(0, 16);
-    // let sender = receiveData.substring(0,6);
-    // let subsystem = receiveData.substring(6,12);
-    let repMsg = `${repHeader}00000000${result.statusCode ? result.statusCode : "14" }`;
+    const receiveData = buffer.toString("utf-8");
+    const resp = await receivingData(receiveData);
 
     // reply to sender
-    console.log(repMsg);
-    socket.write(repMsg);
+    console.log("repMSG : ",resp.repMsg);
+    socket.write(String(resp.repMsg));
   });
 
   socket.on("end", () => {

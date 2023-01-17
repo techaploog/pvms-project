@@ -40,20 +40,27 @@ async function receivingData(message, useDB = true) {
   const result = {
     success: false,
     statusCode: undefined,
-    msg:undefined,
+    repMsg:"",
   };
 
   const printError = (statusCode) => {
     result.statusCode = statusCode;
+    result.repMsg += statusCode.toString();
+
     console.log(`[ERROR]   Code: ${statusCode}   - ${REPLY_CODE[statusCode]}`);
+
     return result;
   };
 
   try {
-    const msg = getJSON(message);
+    const msg = getJSON("");
     const tp = msg.line + msg.trackPoing;
 
-    result.msg = msg;
+    // destination, process, serial, mode=0, length=00000, process, reply code
+    let initResp = `${msg.destName}${msg.procName}${msg.serialNo}000000${msg.type}`;
+    result.repMsg = initResp;
+
+    console.log(msg);
 
     // check tracking point
     if (!TRACK_POINTS.includes(tp)) {
@@ -120,6 +127,7 @@ async function receivingData(message, useDB = true) {
     return {
       success: true,
       statusCode: "00",
+      repMsg: result.repMsg + "00"
     };
   } catch (error) {
     return printError("13");
