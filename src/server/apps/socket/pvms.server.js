@@ -13,7 +13,7 @@ const socketServer = net.createServer((socket) => {
     let repHeader = receiveData.slice(0, 16);
     // let sender = receiveData.substring(0,6);
     // let subsystem = receiveData.substring(6,12);
-    let repMsg = `${repHeader}000000${result?.msg?.type}${result.statusCode ? result.statusCode : "14" }`;
+    let repMsg = `${repHeader}00000000${result.statusCode ? result.statusCode : "14" }`;
 
     // reply to sender
     console.log(repMsg);
