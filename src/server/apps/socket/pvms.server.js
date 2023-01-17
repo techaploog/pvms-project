@@ -10,14 +10,10 @@ const socketServer = net.createServer((socket) => {
   socket.on("data", async (buffer) => {
     let receiveData = buffer.toString("utf-8");
     let result = await receivingData(receiveData);
-    // let repHeader = receiveData.split(0, 12);
-    let sender = receiveData.substring(0,6);
-    let subsystem = receiveData.substring(6,12);
-    let repMsg = `${subsystem}${sender}00000000${result.statusCode ? result.statusCode : "14" }`;
-    // repMsg =
-    //   repMsg + "0" + "00000" + "00" + result.statusCode
-    //     ? result.statusCode
-    //     : "14";
+    let repHeader = receiveData.slice(0, 16);
+    // let sender = receiveData.substring(0,6);
+    // let subsystem = receiveData.substring(6,12);
+    let repMsg = `${repHeader}000000${result?.msg?.type}${result.statusCode ? result.statusCode : "14" }`;
 
     // reply to sender
     console.log(repMsg);

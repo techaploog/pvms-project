@@ -40,6 +40,7 @@ async function receivingData(message, useDB = true) {
   const result = {
     success: false,
     statusCode: undefined,
+    msg:undefined,
   };
 
   const printError = (statusCode) => {
@@ -51,6 +52,8 @@ async function receivingData(message, useDB = true) {
   try {
     const msg = getJSON(message);
     const tp = msg.line + msg.trackPoing;
+
+    result.msg = msg;
 
     // check tracking point
     if (!TRACK_POINTS.includes(tp)) {
