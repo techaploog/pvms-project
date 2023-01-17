@@ -5,7 +5,6 @@ const {getLastALCTracking,extractData} = require('./models/client.model');
 
 const seqDiff = (input,trim) => {
     try{
-
         let lastSeq = Number(input);
         let trimSeq = Number(trim);
     

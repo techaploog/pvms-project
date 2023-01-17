@@ -97,6 +97,7 @@ async function dbLatestRow(trackPoint=null) {
   return latest;
 }
 
+
 // INSERT DATA INTO DB
 async function dbInsert(id, trackPoint, rawData) {
   let db = currentState.db;
@@ -120,6 +121,7 @@ async function dbInsert(id, trackPoint, rawData) {
 
   return result;
 }
+
 
 // delete data which are older than "dateString"
 async function dbDeleteOlder(dateString){
@@ -148,8 +150,8 @@ async function dbDeleteOlder(dateString){
   return rows;
 }
 
-async function dbTrackPoints() {
 
+async function dbTrackPoints() {
   const sqlstr = `SELECT DISTINCT trackPoint FROM ${tableName}`
   
   const dataRows = await new Promise((resolve,rejects) => {
@@ -160,6 +162,7 @@ async function dbTrackPoints() {
 
   return dataRows;
 }
+
 
 async function dbRunQuery(selectString,conditionString=undefined){
   const sqlstr =`SELECT ${selectString} FROM ${tableName} ${conditionString ? conditionString : ""};`;
@@ -173,7 +176,6 @@ async function dbRunQuery(selectString,conditionString=undefined){
       resolve(rows);
     });
   });
-
 }
 
 module.exports = {
