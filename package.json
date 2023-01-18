@@ -5,6 +5,7 @@
   "scripts": {
     "client": "node src/client/client.js",
     "server": "node src/server/server.js",
+    "server-pvms": "node src/server/server.js -p true",
     "server-reset": "node src/server/server.js -r true -a 50",
     "watchClient": "nodemon src/client/client.js",
     "watchServer": "nodemon src/server/server.js",

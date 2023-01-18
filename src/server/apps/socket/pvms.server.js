@@ -2,7 +2,7 @@ const net = require("net");
 
 const {
   receivingData,
-  initListenerState,
+  resetSerial,
 } = require("./pvms.controller");
 
 const socketServer = net.createServer((socket) => {
@@ -24,7 +24,7 @@ const socketServer = net.createServer((socket) => {
     );
 
     console.log("------------------------------");
-    await initListenerState();
+    resetSerial();
   });
 
   socket.on("error", async () => {
@@ -32,7 +32,7 @@ const socketServer = net.createServer((socket) => {
       `\n ! ! Client IP : ${clientIP} , PORT : ${clientPORT} connection error. ! !\n`
     );
     console.log("------------------------------");
-    await initListenerState();
+    resetSerial();
   });
 });
 
