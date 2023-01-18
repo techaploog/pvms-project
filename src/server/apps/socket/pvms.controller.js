@@ -11,7 +11,10 @@ async function initListenerState(resetMode = false, allowance = 100) {
   // init serialNo
   let resp = await pvmsTrackingStatus();
   serverState["resetMode"] = resetMode;
-  serverState["serialNo"] = resp.serialNo;
+  // serverState["serialNo"] = resp.serialNo; //TODO:
+  serverState["serialNo"] = undefined;
+  //TODO:
+  //Confirm the first serial number after "Terminal Down"
 
   if (resetMode) resetAllowance = allowance;
   else resetAllowance = 0;
@@ -55,10 +58,6 @@ async function receivingData(message, useDB = true) {
     let newSerial = serverState["serialNo"];
     let newBC = serverState[tp];
 
-    // DEBUG
-    console.log(msg);
-    //
-
     // receive message -> destination,process,serial ...
     // reply message => process,destination,serial ...
     // processName, destinationName, serial, mode=0, length=00000, process, reply code
@@ -76,6 +75,7 @@ async function receivingData(message, useDB = true) {
         return returnError("75");
       }
     }else {
+      newSerial = Number(msg.serialNo);
       serverState["serialNo"] = Number(msg.serialNo);
     }
 
@@ -136,7 +136,13 @@ async function receivingData(message, useDB = true) {
   }
 }
 
+function resetSerial() {
+  serverState["serialNo"] = undefined;
+  return true;
+}
+
 module.exports = {
+  resetSerial,
   receivingData,
   initListenerState,
 };

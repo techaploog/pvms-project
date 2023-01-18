@@ -83,7 +83,7 @@ async function dbLatestRow(trackPoint=null) {
   const latest = await new Promise((resolve,rejects)=>{
     const sql = `SELECT * FROM ${tableName} ` + 
       `${trackPoint ? `WHERE trackPoint = '${trackPoint}' `: ""}` +
-      `ORDER BY serverTime DESC LIMIT 1;`
+      `ORDER BY serverTime DESC, id DESC LIMIT 1;`
 
     currentState.db.get(sql,(error,rows) => {
       if (error) {
