@@ -24,7 +24,7 @@ async function dbInit() {
   });
   // Create Table
   let sqlStr = `CREATE TABLE IF NOT EXISTS ${tableName} (
-        id char(12) PRIMARY KEY,
+        id char(17) PRIMARY KEY,
         serverTime datetime NOT NULL,
         trackPoint varchar(3) NOT NULL,
         rawData varchar(1024) NOT NULL
