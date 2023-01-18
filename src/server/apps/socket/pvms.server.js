@@ -12,7 +12,6 @@ const socketServer = net.createServer((socket) => {
     const resp = await receivingData(receiveData);
 
     // reply to sender
-    console.log("repMSG : ",resp.repMsg);
     socket.write(String(resp.repMsg));
   });
 
