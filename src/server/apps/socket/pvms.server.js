@@ -2,14 +2,13 @@ const net = require("net");
 
 const {
   receivingData,
-  resetSerial,
   initListenerState,
 } = require("./pvms.controller");
 
 const socketServer = net.createServer((socket) => {
   const clientIP = socket.remoteAddress.split(":").slice(-1);
   const clientPORT = socket.remotePort;
-  console.log(`\n + + Connection from IP : ${clientIP} , PORT : ${clientPORT} + +`);
+  console.log(`\n + + Connection from IP : ${clientIP} , PORT : ${clientPORT} + +\n`);
 
   socket.on("data", async (buffer) => {
     const receiveData = buffer.toString("utf-8");
@@ -19,25 +18,21 @@ const socketServer = net.createServer((socket) => {
     socket.write(String(resp.repMsg));
   });
 
-  socket.on("end", () => {
+  socket.on("end", async () => {
     console.log(
-      `\n - - Close Connection from IP : ${clientIP} , PORT : ${clientPORT} - -`
+      `\n - - Close Connection from IP : ${clientIP} , PORT : ${clientPORT} - -\n`
     );
 
-    console.log("\n---------------");
-    initListenerState();
-    // resetSerial();
-    // console.log(` - Reset Message Serial Number`);
+    console.log("------------------------------");
+    await initListenerState();
   });
 
-  socket.on("error", () => {
+  socket.on("error", async () => {
     console.log(
-      `\n ! ! Client IP : ${clientIP} , PORT : ${clientPORT} connection error. ! !`
+      `\n ! ! Client IP : ${clientIP} , PORT : ${clientPORT} connection error. ! !\n`
     );
-    // resetSerial();
-    // console.log(` - Reset Message Serial Number`);
-    console.log("\n---------------");
-    initListenerState();
+    console.log("------------------------------");
+    await initListenerState();
   });
 });
 
