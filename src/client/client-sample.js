@@ -26,7 +26,7 @@ const testInterval = async () => {
   let scrapData = await extractTA();
   let wbs = await extractWBS();
 
-  let lastSeq = trackData ? trackData.data.bcSeq : undefined;
+  let lastSeq = trackData ? trackData.data?.bcSeq : undefined;
   let trimSeq = scrapData[0][1].slice(2);
 
   const msg = `[DATA] ALC-SEQ:${lastSeq}, TRIM-SEQ:${trimSeq} T-A:${
