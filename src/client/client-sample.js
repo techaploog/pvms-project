@@ -31,7 +31,7 @@ const testInterval = async () => {
 
   const msg = `[DATA] ALC-SEQ:${lastSeq}, TRIM-SEQ:${trimSeq} T-A:${
     lastSeq !== undefined ? seqDiff(lastSeq, trimSeq) : undefined
-  } WBS:${wbs}`;
+  }, WBS:${wbs}`;
   console.log(msg);
 };
 

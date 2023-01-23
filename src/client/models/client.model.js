@@ -69,14 +69,11 @@ async function extractWBS() {
         console.log(err);
         resolve(undefined);
         // rejects(err);
-      })
-      .on('end',()=>{
-        fs.close();
-      })
-  })
+      })      
+  });
 
   if (wbsValue) {
-    wbsValue = Strign(wbsValue,"utf-8").split("=").slice(-1);
+    wbsValue = String(wbsValue,"utf-8").split("=").slice(-1);
   }
 
   return wbsValue;
