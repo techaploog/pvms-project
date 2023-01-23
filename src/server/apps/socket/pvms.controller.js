@@ -73,6 +73,10 @@ async function receivingData(message, useDB = true) {
     let newSerial = serverState["serialNo"];
     let newBC = serverState[tp];
 
+    let recvBC = Number(msg.bcSeq);
+    let recvSR = Number(msg.serialNo);
+
+
     // receive message -> destination,process,serial ...
     // reply message => process,destination,serial ...
     // processName, destinationName, serial, mode=0, length=00000, process, reply code
@@ -80,25 +84,33 @@ async function receivingData(message, useDB = true) {
     const length = "00000";
     result.repMsg = `${msg.procName}${msg.destName}${msg.serialNo}${mode}${length}${msg.type}`;
 
-    // check message serial number
-    // skip when newSerial is undefined
-    if (newSerial) {
-      newSerial = newSerial + 1 >= 10000 ? 1 : newSerial + 1;
-      serverState["serialNo"] = newSerial;
+    
+    // ---- Check Serial No ----------------------
+    // Incorrect Serial No.
+    if (isNaN(recvSR)) {
+      return returnError("13", msg.serialNo, tp, msg.bcSeq);
+    }
 
+    if (msg.serialNo !== "0000" || newSerial !== undefined) {
+      // Need to Check Serial No.
+      newSerial = newSerial + 1 >= 10000 ? 1 : newSerial + 1;
       if (
-        newSerial !== Number(msg.serialNo) &&
+        newSerial !== recvSR &&
         [SERVER_MODE_STD, SERVER_MODE_PVMS].includes(serverState.mode)
       ) {
         return returnError("75", msg.serialNo, tp, msg.bcSeq);
       }
     } else {
-      newSerial = Number(msg.serialNo);
-      serverState["serialNo"] = Number(msg.serialNo);
+      newSerial = 0;
     }
 
+    // Message Serial "OK" -> Store new server state
+    serverState["serialNo"] = newSerial;
+    // -------------------------------------------
+
+    // check BF Seq Data Conversion
     // check tracking point
-    if (!TRACK_POINTS.includes(tp)) {
+    if (isNaN(recvBC) || !TRACK_POINTS.includes(tp)) {
       return returnError("13", msg.serialNo, tp, msg.bcSeq);
     }
 
@@ -107,31 +119,33 @@ async function receivingData(message, useDB = true) {
       return returnError("76", msg.serialNo, tp, msg.bcSeq);
     }
 
+    // ---- Check BC Sequence ----------------------
     if ([SERVER_MODE_STD, SERVER_MODE_PVMS].includes(serverState.mode)) {
-      // check bc sequence
+      // check bc sequence only if type start with 0, 1
       // skip when newBC is undefined
-      if (newBC) {
+      if (newBC && msg.type[0] === "0") {
         newBC = newBC + 1 >= 1000 ? 0 : newBC + 1;
 
-        if (newBC !== Number(msg.bcSeq)) {
+        if (newBC !== recvBC) {
           return returnError("90", msg.serialNo, tp, msg.bcSeq);
+        }
+
+        // insert data into msg logger database ()
+        // only if useDB and receiveing message is 00 (Normal Type)
+        if (useDB && msg.type === "00") {
+          let instRes = await pvmsInsertData(newSerial, message);
+          if (!instRes) {
+            return returnError("14", msg.serialNo, tp, msg.bcSeq);
+          }
         }
       }
     } else if (serverState.mode === SERVER_MODE_RESET) {
       resetAllowance--;
     }
 
-    // if useDB
-    // insert data into database ()
-    if (useDB) {
-      let instRes = await pvmsInsertData(newSerial, message);
-      if (!instRes) {
-        return returnError("14", msg.serialNo, tp, msg.bcSeq);
-      }
-    }
-
     // ## Correct Message ##
-    serverState[tp] = Number(msg.bcSeq);
+    serverState[tp] = recvBC;
+    // ---------------------------------------------
 
     // No error print success message and return result
     // log to console
@@ -146,7 +160,7 @@ async function receivingData(message, useDB = true) {
 
     console.log(resMsg);
 
-    if (resetAllowance <= 0 && (serverState.mode === SERVER_MODE_RESET)) {
+    if (resetAllowance <= 0 && serverState.mode === SERVER_MODE_RESET) {
       serverState.mode = SERVER_MODE_STD;
       resetSerial();
     }
