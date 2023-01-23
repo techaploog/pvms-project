@@ -70,10 +70,13 @@ async function extractWBS() {
         resolve(undefined);
         // rejects(err);
       })
+      .on('end',()=>{
+        fs.close();
+      })
   })
 
   if (wbsValue) {
-    wbsValue = wbsValue.split("=").slice(-1);
+    wbsValue = Strign(wbsValue,"utf-8").split("=").slice(-1);
   }
 
   return wbsValue;
