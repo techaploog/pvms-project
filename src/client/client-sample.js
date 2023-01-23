@@ -1,50 +1,58 @@
-require('dotenv').config();
+require("dotenv").config();
 
-const {getLastALCTracking,extractData} = require('./models/client.model');
+const {
+  getLastALCTracking,
+  extractTA,
+  extractWBS,
+} = require("./models/client.model");
 // const {makeCalculation} = require('./controller/client.controller');
 
-const seqDiff = (input,trim) => {
-    try{
-        let lastSeq = Number(input);
-        let trimSeq = Number(trim);
-    
-        if (lastSeq < trimSeq){
-            lastSeq = 1000 + lastSeq;
-        }
-        return lastSeq - trimSeq;
+const seqDiff = (input, trim) => {
+  try {
+    let lastSeq = Number(input);
+    let trimSeq = Number(trim);
 
-    }catch (err){
-        return undefined;
+    if (lastSeq < trimSeq) {
+      lastSeq = 1000 + lastSeq;
     }
-}
+    return lastSeq - trimSeq;
+  } catch (err) {
+    return undefined;
+  }
+};
 
-const test = async () => {
-    let trackData = await getLastALCTracking();
-    let scrapData = await extractData();
+const testInterval = async () => {
+  let trackData = await getLastALCTracking();
+  let scrapData = await extractTA();
+  let wbs = await extractWBS();
 
-    // console.log("Received Data")
-    // console.log(trackData);
-    // console.log(scrapData);
-    // console.log("--------------");
+  let lastSeq = trackData ? trackData.data.bcSeq : undefined;
+  let trimSeq = scrapData[0][1].slice(2);
 
-    // let scDataDate = new Date(scrapData[0][2]);
-    // console.log(scDataDate);
+  const msg = `[DATA] ALC-SEQ:${lastSeq}, TRIM-SEQ:${trimSeq} T-A:${
+    lastSeq !== undefined ? seqDiff(lastSeq, trimSeq) : undefined
+  } WBS:${wbs}`;
+  console.log(msg);
+};
 
-    // let tcDataDate = new Date(trackData.data?.serverTime);
-    // console.log(tcDataDate);
-    let lastSeq = trackData ? trackData.data.bcSeq : undefined;
-    let trimSeq = scrapData[0][1].slice(2);
+const testBackend = async () => {
+  console.log("Received Data");
+  console.log(trackData);
+  console.log(scrapData);
+  console.log("--------------");
 
-    const msg = `[DATA] ALC-SEQ:${lastSeq}, TRIM-SEQ:${trimSeq} T-A:${lastSeq !== undefined ? seqDiff(lastSeq,trimSeq):undefined}`
-    console.log(msg);
-}
+  let scDataDate = new Date(scrapData[0][2]);
+  console.log(scDataDate);
+
+  let tcDataDate = new Date(trackData.data?.serverTime);
+  console.log(tcDataDate);
+};
 
 console.log("[TEST] START client.test.js");
-test();
-setInterval( async () => {
-    await test();
+testInterval();
+setInterval(async () => {
+  await testInterval();
 }, 30000);
-
 
 // console.log(seqDiff('801','800'),1);
 // console.log(seqDiff('999','980'),19);

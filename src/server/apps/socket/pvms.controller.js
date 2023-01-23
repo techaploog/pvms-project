@@ -91,7 +91,7 @@ async function receivingData(message, useDB = true) {
       return returnError("13", msg.serialNo, tp, msg.bcSeq);
     }
 
-    if (msg.serialNo !== "0000" || newSerial !== undefined) {
+    if ( recvSR !== 0 && serverState["serialNo"] !== undefined) {
       // Need to Check Serial No.
       newSerial = newSerial + 1 >= 10000 ? 1 : newSerial + 1;
       if (
@@ -101,7 +101,7 @@ async function receivingData(message, useDB = true) {
         return returnError("75", msg.serialNo, tp, msg.bcSeq);
       }
     } else {
-      newSerial = 0;
+      newSerial = recvSR;
     }
 
     // Message Serial "OK" -> Store new server state
@@ -126,8 +126,10 @@ async function receivingData(message, useDB = true) {
       if (newBC && msg.type[0] === "0") {
         newBC = newBC + 1 >= 1000 ? 0 : newBC + 1;
 
-        if (newBC !== recvBC) {
-          return returnError("90", msg.serialNo, tp, msg.bcSeq);
+        if ( newBC !== recvBC) {
+          if (recvSR !== 0 || recvBC !== serverState[tp]){
+            return returnError("90", msg.serialNo, tp, msg.bcSeq);
+          }
         }
 
         // insert data into msg logger database ()
@@ -139,6 +141,7 @@ async function receivingData(message, useDB = true) {
           }
         }
       }
+
     } else if (serverState.mode === SERVER_MODE_RESET) {
       resetAllowance--;
     }

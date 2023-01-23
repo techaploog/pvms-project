@@ -1,7 +1,9 @@
+const fs = require('fs');
 const axios = require("axios");
 const cheerio = require("cheerio");
 
 const SCRAPING_URL = process.env.PVMS_SRC_URL;
+const PVMS_WBS_URL = process.env.PVMS_WBS_URL;
 
 const API_PORT = process.env.PVMS_API_PORT;
 const TRACK_POINT = "1L0";
@@ -11,7 +13,7 @@ const state = {
   lastestID: undefined,
 };
 
-async function extractData() {
+async function extractTA() {
   const { data } = await axios.get(SCRAPING_URL);
   const $ = cheerio.load(data);
   const tmp = [...$("font[size=2]")];
@@ -55,7 +57,31 @@ async function getLastALCTracking() {
   }; 
 }
 
+async function extractWBS() {
+  let wbsValue = undefined;
+
+  wbsValue = await new Promise((resolve,rejects)=> {
+    fs.ReadStream(PVMS_WBS_URL)
+      .on('data', async (data) => {
+        resolve(data);
+      })
+      .on('error', (err) => {
+        console.log(err);
+        resolve(undefined);
+        // rejects(err);
+      })
+  })
+
+  if (wbsValue) {
+    wbsValue = wbsValue.split("=").slice(-1);
+  }
+
+  return wbsValue;
+
+}
+
 module.exports = {
-  extractData,
+  extractTA,
+  extractWBS,
   getLastALCTracking,
 };
