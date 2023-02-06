@@ -2,33 +2,25 @@ const { pvmsInsertData, pvmsTrackingStatus } = require("./pvms.model");
 const { getJSON, checkMsgLenght } = require("./utilities/server.utilities");
 const {
   REPLY_CODE,
-  SERVER_MODE_RESET,
   SERVER_MODE_STD,
   SERVER_MODE_PVMS,
 } = require("./utilities/server.constant");
 
 const TRACK_POINTS = process.env.PVMS_SERV_TP_LIST.split(",");
 
-let serverState = {};
+let serverState = {mode:undefined, serialNo:0};
 let resetAllowance = 0;
 
-async function initListenerState(mode = SERVER_MODE_STD, allowance = 50) {
+async function initListenerState(mode = SERVER_MODE_STD) {
   // init serialNo
-  let resp = await pvmsTrackingStatus();
   serverState["mode"] = mode;
-  // serverState["serialNo"] = resp.serialNo; //TODO:
-  serverState["serialNo"] = undefined;
-  //TODO:
-  //Confirm the first serial number after "Terminal Down"
-
-  if (mode === SERVER_MODE_RESET) resetAllowance = allowance;
-  else resetAllowance = 0;
+  // serverState["serialNo"] = undefined;
 
   // init bcSeq for each trackPoint
   for (i = 0; i < TRACK_POINTS?.length; i++) {
     let tp = TRACK_POINTS[i];
     let resp = await pvmsTrackingStatus(tp);
-    if ([SERVER_MODE_PVMS, SERVER_MODE_RESET].includes(mode)) {
+    if ([SERVER_MODE_PVMS].includes(mode)) {
       serverState[tp] = undefined;
     } else {
       serverState[tp] = resp.bcSeq;
@@ -41,6 +33,7 @@ async function initListenerState(mode = SERVER_MODE_STD, allowance = 50) {
   });
 }
 
+//TODO:
 async function receivingData(message, useDB = true) {
   const result = {
     success: false,
@@ -76,22 +69,22 @@ async function receivingData(message, useDB = true) {
     let recvBC = Number(msg.bcSeq);
     let recvSR = Number(msg.serialNo);
 
-
+    // ## PREPARE REPLY MESSAGE TEMPLATE ##
     // receive message -> destination,process,serial ...
     // reply message => process,destination,serial ...
     // processName, destinationName, serial, mode=0, length=00000, process, reply code
     const mode = "0";
     const length = "00000";
     result.repMsg = `${msg.procName}${msg.destName}${msg.serialNo}${mode}${length}${msg.type}`;
+    // ##
 
-    
     // ---- Check Serial No ----------------------
     // Incorrect Serial No.
     if (isNaN(recvSR)) {
       return returnError("13", msg.serialNo, tp, msg.bcSeq);
     }
 
-    if ( recvSR !== 0 && serverState["serialNo"] !== undefined) {
+    if (recvSR !== 0 && serverState["serialNo"] !== undefined) {
       // Need to Check Serial No.
       newSerial = newSerial + 1 >= 10000 ? 1 : newSerial + 1;
       if (
@@ -126,24 +119,23 @@ async function receivingData(message, useDB = true) {
       if (newBC && msg.type[0] === "0") {
         newBC = newBC + 1 >= 1000 ? 0 : newBC + 1;
 
-        if ( newBC !== recvBC) {
-          if (recvSR !== 0 || recvBC !== serverState[tp]){
+        if (newBC !== recvBC) {
+          if (recvSR !== 0 || recvBC !== serverState[tp]) {
             return returnError("90", msg.serialNo, tp, msg.bcSeq);
           }
         }
-
-        // insert data into msg logger database ()
-        // only if useDB and receiveing message is 00 (Normal Type)
-        if (useDB && msg.type === "00") {
-          let instRes = await pvmsInsertData(newSerial, message);
-          if (!instRes) {
-            return returnError("14", msg.serialNo, tp, msg.bcSeq);
-          }
-        }
       }
-
     } else if (serverState.mode === SERVER_MODE_RESET) {
       resetAllowance--;
+    }
+
+    // insert data into msg logger database ()
+    // only if useDB and receiveing message is 00 (Normal Type)
+    if (useDB && msg.type === "00") {
+      let instRes = await pvmsInsertData(newSerial, message);
+      if (!instRes) {
+        return returnError("14", msg.serialNo, tp, msg.bcSeq);
+      }
     }
 
     // ## Correct Message ##
@@ -180,7 +172,7 @@ async function receivingData(message, useDB = true) {
 }
 
 function resetSerial() {
-  serverState["serialNo"] = undefined;
+  serverState["serialNo"] = 0;
 
   console.log(`[INIT]\tServer State`);
   Object.keys(serverState).map((tp) => {
