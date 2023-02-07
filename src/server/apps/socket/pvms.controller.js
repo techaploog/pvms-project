@@ -1,182 +1,130 @@
 const { pvmsInsertData, pvmsTrackingStatus } = require("./pvms.model");
-const { getJSON, checkMsgLenght } = require("./utilities/server.utilities");
 const {
-  REPLY_CODE,
+  getJSON,
+  checkMsgLenght,
+  logAndReplyError,
+  logAndReplyOK,
+} = require("./utilities/server.utilities");
+const {
   SERVER_MODE_STD,
   SERVER_MODE_PVMS,
 } = require("./utilities/server.constant");
 
 const TRACK_POINTS = process.env.PVMS_SERV_TP_LIST.split(",");
 
-let serverState = {mode:undefined, serialNo:0};
-let resetAllowance = 0;
+let serverState = {
+  serverMode: undefined,
+  serialNo: undefined,
+};
 
+// Initial Server State
 async function initListenerState(mode = SERVER_MODE_STD) {
-  // init serialNo
-  serverState["mode"] = mode;
-  // serverState["serialNo"] = undefined;
+  serverState["serverMode"] = mode;
 
   // init bcSeq for each trackPoint
   for (i = 0; i < TRACK_POINTS?.length; i++) {
-    let tp = TRACK_POINTS[i];
-    let resp = await pvmsTrackingStatus(tp);
-    if ([SERVER_MODE_PVMS].includes(mode)) {
+    const tp = TRACK_POINTS[i];
+    const {bcSeq} = await pvmsTrackingStatus(tp);
+    if (mode === SERVER_MODE_PVMS) {
       serverState[tp] = undefined;
     } else {
-      serverState[tp] = resp.bcSeq;
+      serverState[tp] = bcSeq;
     }
   }
 
   console.log(`[INIT]\tServer State`);
-  Object.keys(serverState).map((tp) => {
-    console.log(`\t- ${tp} :`, serverState[tp]);
+  Object.keys(serverState).map((stateKey) => {
+    console.log(`\t- ${stateKey} :`, serverState[stateKey]);
   });
 }
 
-//TODO:
-async function receivingData(message, useDB = true) {
-  const result = {
-    success: false,
-    statusCode: undefined,
-    repMsg: "",
-  };
-
-  const returnError = (statusCode, serialNo, tp, seqNo) => {
-    result.statusCode = statusCode;
-    result.repMsg += String(statusCode);
-
-    let errMsg =
-      `[ERROR: ${statusCode}]  ${REPLY_CODE[String(statusCode)].padEnd(
-        20,
-        " "
-      )} < X > ` +
-      `[ serial: ${String(serialNo).padStart(4, 0)} , ` +
-      `TP: ${tp} , ` +
-      `SEQ: ${String(seqNo).padStart(3, 0)} ]`;
-
-    console.log(errMsg);
-
-    return result;
-  };
-
+async function receivingData(message) {
   const msg = getJSON(message);
   const tp = msg.line + msg.trackPoint;
 
   try {
-    let newSerial = serverState["serialNo"];
-    let newBC = serverState[tp];
+    const { serialNo, serverMode } = serverState;
+    const bcSeq = serverState[tp];
 
-    let recvBC = Number(msg.bcSeq);
-    let recvSR = Number(msg.serialNo);
+    const nextSerial =
+      serialNo === undefined ? 0 : serialNo + 1 >= 10000 ? 1 : serialNo + 1;
+    const nextBC =
+      bcSeq === undefined ? undefined : bcSeq + 1 >= 1000 ? 0 : bcSeq + 1;
 
-    // ## PREPARE REPLY MESSAGE TEMPLATE ##
-    // receive message -> destination,process,serial ...
-    // reply message => process,destination,serial ...
-    // processName, destinationName, serial, mode=0, length=00000, process, reply code
-    const mode = "0";
-    const length = "00000";
-    result.repMsg = `${msg.procName}${msg.destName}${msg.serialNo}${mode}${length}${msg.type}`;
-    // ##
+    const recvBC = Number(msg.bcSeq);
+    const recvSR = Number(msg.serialNo);
 
-    // ---- Check Serial No ----------------------
-    // Incorrect Serial No.
-    if (isNaN(recvSR)) {
-      return returnError("13", msg.serialNo, tp, msg.bcSeq);
-    }
-
-    if (recvSR !== 0 && serverState["serialNo"] !== undefined) {
-      // Need to Check Serial No.
-      newSerial = newSerial + 1 >= 10000 ? 1 : newSerial + 1;
-      if (
-        newSerial !== recvSR &&
-        [SERVER_MODE_STD, SERVER_MODE_PVMS].includes(serverState.mode)
-      ) {
-        return returnError("75", msg.serialNo, tp, msg.bcSeq);
-      }
-    } else {
-      newSerial = recvSR;
-    }
-
-    // Message Serial "OK" -> Store new server state
-    serverState["serialNo"] = newSerial;
-    // -------------------------------------------
+    // ---- Check Data Correctness ----------------------
+    // Incorrect "Format" of Serial No.
+    if (isNaN(recvSR)) return logAndReplyError("13", msg);
 
     // check BF Seq Data Conversion
     // check tracking point
-    if (isNaN(recvBC) || !TRACK_POINTS.includes(tp)) {
-      return returnError("13", msg.serialNo, tp, msg.bcSeq);
-    }
+    if (isNaN(recvBC) || !TRACK_POINTS.includes(tp))
+      return logAndReplyError("13", msg);
 
-    // check message length
-    if (!checkMsgLenght(message)) {
-      return returnError("76", msg.serialNo, tp, msg.bcSeq);
-    }
-
-    // ---- Check BC Sequence ----------------------
-    if ([SERVER_MODE_STD, SERVER_MODE_PVMS].includes(serverState.mode)) {
-      // check bc sequence only if type start with 0, 1
-      // skip when newBC is undefined
-      if (newBC && msg.type[0] === "0") {
-        newBC = newBC + 1 >= 1000 ? 0 : newBC + 1;
-
-        if (newBC !== recvBC) {
-          if (recvSR !== 0 || recvBC !== serverState[tp]) {
-            return returnError("90", msg.serialNo, tp, msg.bcSeq);
-          }
-        }
+    // ---- Check Message Serial Number ----------------------
+    if (recvSR !== 0) {
+      if (recvSR === serialNo) {
+        return logAndReplyOK(msg);
       }
-    } else if (serverState.mode === SERVER_MODE_RESET) {
-      resetAllowance--;
+
+      if (recvSR !== nextSerial && serverMode === SERVER_MODE_STD) {
+        return logAndReplyError("75", msg);
+      }
     }
 
-    // insert data into msg logger database ()
-    // only if useDB and receiveing message is 00 (Normal Type)
-    if (useDB && msg.type === "00") {
-      let instRes = await pvmsInsertData(newSerial, message);
+    // ---- Check BC DATA ----------------------
+    // check message length (After Check Serial Number)
+    if (!checkMsgLenght(message)) return logAndReplyError("76", msg);
+
+    // TODO: Modify this block when need to use other type of message
+    // type NOT start with 0, 1 -> do nothing and reply ok.
+    if (!["0", "1"].includes(msg.type[0])) return logAndReplyOK(msg);
+
+    // TODO: Modify his block when need to store other message type.
+    if (msg.type[0] === 0) {
+      
+      // start with 0 -> Need to validate BC Seq
+      if (recvSR === 0 && recvBC === bcSeq) return logAndReplyOK(msg);
+
+      if (recvBC !== nextBC) return logAndReplyError("90", msg);
+      // ------ end BC Seq validation -----------
+
+      // TODO: Update this block if need to validate data length
+      // { . . . }
+
+      // update database
+      let instRes = await pvmsInsertData(recvSR, message);
       if (!instRes) {
-        return returnError("14", msg.serialNo, tp, msg.bcSeq);
+        return logAndReplyError("14", msg);
       }
+
+      // ## Correct Message ##
+      // Update BC Seq only if process type start with 0
+      serverState[tp] = recvBC;
     }
 
     // ## Correct Message ##
-    serverState[tp] = recvBC;
+    // Store BC Seq & Serial No.
+    serverState.serialNo = recvSR;
+
     // ---------------------------------------------
 
-    // No error print success message and return result
-    // log to console
-    let resMsg =
-      `[${serverState.mode
-        .split("_")
-        .slice(-1)[0]
-        .padEnd(5, " ")}: 00]  ${"Receive Success".padEnd(20, " ")} < = > ` +
-      `[ serial: ${String(serverState.serialNo).padStart(4, 0)} , ` +
-      `TP: ${tp} , ` +
-      `SEQ: ${String(serverState[tp]).padStart(3, 0)} ]`;
+    return logAndReplyOK(msg);
 
-    console.log(resMsg);
-
-    if (resetAllowance <= 0 && serverState.mode === SERVER_MODE_RESET) {
-      serverState.mode = SERVER_MODE_STD;
-      resetSerial();
-    }
-
-    return {
-      success: true,
-      statusCode: "00",
-      repMsg: result.repMsg + "00",
-    };
   } catch (error) {
     console.log(error);
-    return returnError("13");
+    return logAndReplyError("13",msg);
   }
 }
 
 function resetSerial() {
-  serverState["serialNo"] = 0;
+  serverState.serialNo = undefined;
 
   console.log(`[INIT]\tServer State`);
-  Object.keys(serverState).map((tp) => {
-    console.log(`\t- ${tp} :`, serverState[tp]);
+  Object.keys(serverState).map((stateKey) => {
+    console.log(`\t- ${stateKey} :`, serverState[stateKey]);
   });
 
   return true;

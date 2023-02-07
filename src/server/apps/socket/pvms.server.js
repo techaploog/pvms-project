@@ -5,6 +5,8 @@ const {
   resetSerial,
 } = require("./pvms.controller");
 
+const ALLOW_DESTINATION = process.env.PVMS_SERV_DEST;
+
 const socketServer = net.createServer((socket) => {
   const clientIP = socket.remoteAddress.split(":").slice(-1);
   const clientPORT = socket.remotePort;
@@ -12,10 +14,13 @@ const socketServer = net.createServer((socket) => {
 
   socket.on("data", async (buffer) => {
     const receiveData = buffer.toString("utf-8");
-    const resp = await receivingData(receiveData);
 
-    // reply to sender
-    socket.write(String(resp.repMsg));
+    if (receiveData.slice(0,6) === ALLOW_DESTINATION){
+      const resp = await receivingData(receiveData);
+      // reply to sender
+      socket.write(String(resp.repMsg));
+    }
+
   });
 
   socket.on("end", async () => {

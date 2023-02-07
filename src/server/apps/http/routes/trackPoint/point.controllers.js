@@ -4,8 +4,8 @@ const {dbTrackPoints,dbLatestRow} = require(path.join(__basedir,'database','db.m
 const {getJSON} = require(path.join(__basedir,'apps','socket','utilities','server.utilities.js'));
 
 async function httpGetTrackPoints(req,res){
-    const queryData = await dbTrackPoints();
-    return res.status(200).json(queryData);
+    const trackPoints = await dbTrackPoints();
+    return res.status(200).json({trackPoints});
 }
 
 async function httpGetLastest(req,res) {

@@ -1,12 +1,16 @@
 const { dbInsert, dbLatestRow } = require("../../database/db.model");
-const { getTrackPoint, getJSON } = require("./utilities/server.utilities");
+const { getJSON } = require("./utilities/server.utilities");
 
 async function pvmsInsertData(idx, message) {
   // const nowStr = new Date().toISOString().split("T")[0].replace(/-/g, "");
   const nowStr = String(Number(new Date()));
   const dataIndex = `${nowStr}${String(idx).padStart(4, 0)}`;
-  const trackPoint = getTrackPoint(message);
-  const result = await dbInsert(dataIndex, trackPoint, message);
+
+  const {type,line,trackPoint,bcSeq,bodyNo} = getJSON(message);
+  const TP = line + trackPoint;
+
+  const result = await dbInsert(dataIndex,type,TP,bcSeq,bodyNo, message);
+
   return result;
 }
 

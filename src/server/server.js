@@ -9,10 +9,7 @@ const {
   setCleaningInterval,
 } = require("./database/db.controller");
 const { initListenerState } = require("./apps/socket/pvms.controller");
-const {
-  SERVER_MODE_RESET,
-  SERVER_MODE_PVMS,
-} = require("./apps/socket/utilities/server.constant");
+const { SERVER_MODE_PVMS } = require("./apps/socket/utilities/server.constant");
 
 const socketServer = require("./apps/socket/pvms.server");
 const apiServer = require("./apps/http/api.server");
@@ -22,9 +19,7 @@ const API_PORT = Number(process.env.PVMS_API_PORT);
 
 const program = new Command();
 program
-  // .option("-r, --reset <boolean>", "start server and receive all message",false)
-  // .option("-a, --allowance <number>", "number of records of RESET mode","100")
-  .option("-p, --pvmsMode <boolean>", "Receive ALL Greater sequence", false);
+  .option("-p, --pvmsMode <boolean>", "Skip validation for 1 sequence", false);
 
 const args = program.parse().opts();
 
@@ -36,7 +31,6 @@ async function startServer() {
 
   // init socket listener state
   if (args.pvmsMode) {
-    console.log(`[INIT] "PVMS Mode" : receive without verification 1 message.`);
     await initListenerState(SERVER_MODE_PVMS);
   } else {
     await initListenerState();
@@ -44,11 +38,11 @@ async function startServer() {
 
   console.log(`\n- - - - - - - - -`);
   socketServer.listen(SERVER_PORT, () => {
-    console.log(`PVMS {Socket Server} listening on PORT : ${SERVER_PORT}...`);
+    console.log(`PVMS { Socket Server } listening on PORT : ${SERVER_PORT}...`);
   });
 
   apiServer.listen(API_PORT, () => {
-    console.log(`PVMS {API Server} listening on PORT : ${API_PORT}...`);
+    console.log(`PVMS {   API Server  } listening on PORT : ${API_PORT}...`);
   });
 
   return true;

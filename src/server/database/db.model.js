@@ -15,7 +15,7 @@ const tableName = "dataLogs";
 
 //INIT INTERNAL DATABASE
 async function dbInit() {
-  let db = new sqlite.Database(DB_PATH, (error) => {
+  let newDB = new sqlite.Database(DB_PATH, (error) => {
     if (error) {
       console.log(`[ERROR]\tCannot create internal database.`);
       console.log(`\t-${error}`);
@@ -24,25 +24,30 @@ async function dbInit() {
   });
   // Create Table
   let sqlStr = `CREATE TABLE IF NOT EXISTS ${tableName} (
-        id char(17) PRIMARY KEY,
+        id VARCHAR(20) PRIMARY KEY,
         serverTime datetime NOT NULL,
-        trackPoint varchar(3) NOT NULL,
-        rawData varchar(1024) NOT NULL
+        msgType CHARACTER(2) NOT NULL,
+        trackPoint CHARACTER(3) NOT NULL,
+        bcSeq CHARACTER(3) NOT NULL,
+        bodyNo CHARACTER(5) NOT NULL,
+        rawData VARCHAR(1024) NOT NULL
     )`;
 
   const result = await new Promise((resolve, rejects) => {
-    db.run(sqlStr, (error) => {
+    newDB.run(sqlStr, (error) => {
       if (error) {
         console.log(error);
         resolve(false);
-      } else resolve(true);
+      } else {
+        resolve(true)
+      };
     });
   });
 
   if (result) {
     currentState = {
       status: true,
-      db: db,
+      db: newDB,
     };
   }
   return currentState.status;
@@ -99,13 +104,16 @@ async function dbLatestRow(trackPoint=null) {
 
 
 // INSERT DATA INTO DB
-async function dbInsert(id, trackPoint, rawData) {
+async function dbInsert(id, msgType, trackPoint, bcSeq, bodyNo, rawData) {
   let db = currentState.db;
   const result = await new Promise((resolve, rejects) => {
     const sql = `INSERT INTO ${tableName} VALUES(
             '${id}',
             datetime('now','localtime'),
+            '${msgType}',
             '${trackPoint}',
+            '${bcSeq}',
+            '${bodyNo}',
             '${rawData}'
         );`;
 
@@ -166,13 +174,12 @@ async function dbTrackPoints() {
 
 async function dbRunQuery(selectString,conditionString=undefined){
   const sqlstr =`SELECT ${selectString} FROM ${tableName} ${conditionString ? conditionString : ""};`;
-
   return new Promise((resolve,rejects) => {
     currentState.db.all(sqlstr, (error,rows) => {
       if(error){
         rejects(error);
       }
-      
+
       resolve(rows);
     });
   });

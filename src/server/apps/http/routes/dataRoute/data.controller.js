@@ -6,7 +6,7 @@ async function httpGetAllData (req,res) {
     try{
         // select *
         const dataRow = await dbRunQuery("*");
-        return res.status(200).json(dataRow);
+        return res.status(200).json({data:dataRow});
     }catch (err) {
         console.log(err);
         return res.status(500).json({detail:"Cannot Query Data!"})
