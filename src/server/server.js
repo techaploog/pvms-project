@@ -38,11 +38,11 @@ async function startServer() {
 
   console.log(`\n- - - - - - - - -`);
   socketServer.listen(SERVER_PORT, () => {
-    console.log(`PVMS { Socket Server } listening on PORT : ${SERVER_PORT}...`);
+    console.log(`PVMS { Socket Server } listening on PORT : ${String(SERVER_PORT).padEnd(5," ")}...`);
   });
 
   apiServer.listen(API_PORT, () => {
-    console.log(`PVMS {   API Server  } listening on PORT : ${API_PORT}...`);
+    console.log(`PVMS {   API Server  } listening on PORT : ${String(API_PORT).padEnd(5," ")}...`);
   });
 
   return true;

@@ -88,7 +88,7 @@ async function receivingData(message) {
       // start with 0 -> Need to validate BC Seq
       if (recvSR === 0 && recvBC === bcSeq) return logAndReplyOK(msg);
 
-      if (recvBC !== nextBC) return logAndReplyError("90", msg);
+      if (nextBC !== undefined && recvBC !== nextBC) return logAndReplyError("90", msg);
       // ------ end BC Seq validation -----------
 
       // TODO: Update this block if need to validate data length
