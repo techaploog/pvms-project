@@ -83,7 +83,7 @@ async function receivingData(message) {
     if (!["0", "1"].includes(msg.type[0])) return logAndReplyOK(msg);
 
     // TODO: Modify his block when need to store other message type.
-    if (msg.type[0] === 0) {
+    if (msg.type[0] === "0") {
       
       // start with 0 -> Need to validate BC Seq
       if (recvSR === 0 && recvBC === bcSeq) return logAndReplyOK(msg);
