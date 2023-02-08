@@ -68,7 +68,7 @@ async function receivingData(message) {
       if (recvSR === serialNo) {
         return logAndReplyOK(msg);
       }
-
+      console.log("recvSR :",recvSR,"nextSerial :",nextSerial)
       if (recvSR !== nextSerial && serverMode === SERVER_MODE_STD) {
         return logAndReplyError("75", msg);
       }
@@ -110,6 +110,8 @@ async function receivingData(message) {
     serverState.serialNo = recvSR;
 
     // ---------------------------------------------
+    if (serverMode === SERVER_MODE_PVMS)
+      serverState.serverMode = SERVER_MODE_STD;
 
     return logAndReplyOK(msg);
 
