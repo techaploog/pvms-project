@@ -25,15 +25,15 @@ const REPLY_CODE = {
     "91" : "vehicleDataLengthError",
 }
 
-const SERVER_MODE_STD = "SERVER_MODE_STD";
-const SERVER_MODE_RESET = "SERVER_MODE_RESET";
-const SERVER_MODE_PVMS = "SERVER_MODE_PVMS";
+
+const SERVER_MODE = {
+    STD : "SERVER_MODE_STD",
+    PVMS : "SERVER_MODE_PVMS"
+}
 
 
 module.exports = {
-    SERVER_MODE_STD,
-    SERVER_MODE_RESET,
-    SERVER_MODE_PVMS,
+    SERVER_MODE,
     RECEIVING_CODE,
     REPLY_CODE,
 }

@@ -6,8 +6,7 @@ const {
   logAndReplyOK,
 } = require("./utilities/server.utilities");
 const {
-  SERVER_MODE_STD,
-  SERVER_MODE_PVMS,
+  SERVER_MODE,
 } = require("./utilities/server.constant");
 
 const TRACK_POINTS = process.env.PVMS_SERV_TP_LIST.split(",");
@@ -18,14 +17,14 @@ let serverState = {
 };
 
 // Initial Server State
-async function initListenerState(mode = SERVER_MODE_STD) {
+async function initListenerState(mode = SERVER_MODE.STD) {
   serverState["serverMode"] = mode;
 
   // init bcSeq for each trackPoint
   for (i = 0; i < TRACK_POINTS?.length; i++) {
     const tp = TRACK_POINTS[i];
     const { bcSeq } = await pvmsTrackingStatus(tp);
-    if (mode === SERVER_MODE_PVMS) {
+    if (mode === SERVER_MODE.PVMS) {
       serverState[tp] = undefined;
     } else {
       serverState[tp] = bcSeq;
@@ -68,7 +67,7 @@ async function receivingData(message) {
       if (recvSR === serialNo) {
         return logAndReplyOK(msg);
       }
-      if (recvSR !== nextSerial && serverMode === SERVER_MODE_STD) {
+      if (recvSR !== nextSerial && serverMode === SERVER_MODE.STD) {
         return logAndReplyError("75", msg);
       }
     }
@@ -95,7 +94,7 @@ async function receivingData(message) {
       if (
         recvBC !== nextBC &&
         nextBC !== undefined &&
-        serverMode === SERVER_MODE_STD
+        serverMode === SERVER_MODE.STD
       ) {
         return logAndReplyError("90", msg);
       }
@@ -120,8 +119,10 @@ async function receivingData(message) {
     serverState.serialNo = recvSR;
 
     // ---------------------------------------------
-    if (serverMode === SERVER_MODE_PVMS)
-      serverState.serverMode = SERVER_MODE_STD;
+    if (serverMode === SERVER_MODE.PVMS) {
+      console.log(`[  UPDATE ] MODE: ${serverMode} -> ${SERVER_MODE.STD}`);
+      serverState.serverMode = SERVER_MODE.STD;
+    }
 
     return logAndReplyOK(msg);
   } catch (error) {

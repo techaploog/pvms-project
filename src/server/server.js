@@ -9,7 +9,7 @@ const {
   setCleaningInterval,
 } = require("./database/db.controller");
 const { initListenerState } = require("./apps/socket/pvms.controller");
-const { SERVER_MODE_PVMS } = require("./apps/socket/utilities/server.constant");
+const { SERVER_MODE } = require("./apps/socket/utilities/server.constant");
 
 const socketServer = require("./apps/socket/pvms.server");
 const apiServer = require("./apps/http/api.server");
@@ -31,7 +31,7 @@ async function startServer() {
 
   // init socket listener state
   if (args.pvmsMode) {
-    await initListenerState(SERVER_MODE_PVMS);
+    await initListenerState(SERVER_MODE.PVMS);
   } else {
     await initListenerState();
   }

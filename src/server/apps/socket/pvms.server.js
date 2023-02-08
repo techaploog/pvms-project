@@ -5,7 +5,7 @@ const {
   resetSerial,
 } = require("./pvms.controller");
 
-const ALLOW_DESTINATION = process.env.PVMS_SERV_DEST;
+const ALLOW_DESTINATION = process.env.PVMS_SERV_DEST || undefined;
 
 const socketServer = net.createServer((socket) => {
   const clientIP = socket.remoteAddress.split(":").slice(-1);

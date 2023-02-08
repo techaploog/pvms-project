@@ -63,7 +63,7 @@ function logAndReplyError(statusCode, msgJson) {
   const repCode = REPLY_CODE[String(statusCode)];
 
   let logMsg =
-    `[ERROR: ${statusCode}]  ${repCode.padEnd(20, " ")} < X > ` +
+    `[ERROR: ${statusCode}] [X] ${repCode.padEnd(20, " ")} < ${msgJson.type} > ` +
     `[ serial: ${msgJson.serialNo.padStart(4, 0)} , ` +
     `TP: ${tp} , ` +
     `SEQ: ${msgJson.bcSeq.padStart(3, 0)} ]`;
@@ -84,7 +84,7 @@ const logAndReplyOK = (msgJson) => {
   const repMsg = `${msgJson.procName}${msgJson.destName}${msgJson.serialNo}${mode}${length}${msgJson.type}00`;
 
   let logMsg =
-    `[NORM : 00]  ${"Receive Success".padEnd(20, " ")} < = > ` +
+    `[NORM : 00] [/] ${"Receive Success".padEnd(20, " ")} < ${msgJson.type} > ` +
     `[ serial: ${msgJson.serialNo.padStart(4, 0)} , ` +
     `TP: ${tp} , ` +
     `SEQ: ${msgJson.bcSeq.padStart(3, 0)} ]`;
