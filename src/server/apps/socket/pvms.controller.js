@@ -24,7 +24,7 @@ async function initListenerState(mode = SERVER_MODE_STD) {
   // init bcSeq for each trackPoint
   for (i = 0; i < TRACK_POINTS?.length; i++) {
     const tp = TRACK_POINTS[i];
-    const {bcSeq} = await pvmsTrackingStatus(tp);
+    const { bcSeq } = await pvmsTrackingStatus(tp);
     if (mode === SERVER_MODE_PVMS) {
       serverState[tp] = undefined;
     } else {
@@ -68,7 +68,6 @@ async function receivingData(message) {
       if (recvSR === serialNo) {
         return logAndReplyOK(msg);
       }
-      console.log("recvSR :",recvSR,"nextSerial :",nextSerial)
       if (recvSR !== nextSerial && serverMode === SERVER_MODE_STD) {
         return logAndReplyError("75", msg);
       }
@@ -80,15 +79,26 @@ async function receivingData(message) {
 
     // TODO: Modify this block when need to use other type of message
     // type NOT start with 0, 1 -> do nothing and reply ok.
-    if (!["0", "1"].includes(msg.type[0])) return logAndReplyOK(msg);
+    if (!["0", "1"].includes(msg.type[0])) {
+      serverState.serialNo = recvSR;
+      return logAndReplyOK(msg);
+    }
 
     // TODO: Modify his block when need to store other message type.
     if (msg.type[0] === "0") {
-      
       // start with 0 -> Need to validate BC Seq
-      if (recvSR === 0 && recvBC === bcSeq) return logAndReplyOK(msg);
+      if (recvSR === 0 && recvBC === bcSeq) {
+        serverState.serialNo = recvSR;
+        return logAndReplyOK(msg);
+      }
 
-      if (nextBC !== undefined && recvBC !== nextBC) return logAndReplyError("90", msg);
+      if (
+        recvBC !== nextBC &&
+        nextBC !== undefined &&
+        serverMode === SERVER_MODE_STD
+      ) {
+        return logAndReplyError("90", msg);
+      }
       // ------ end BC Seq validation -----------
 
       // TODO: Update this block if need to validate data length
@@ -114,10 +124,9 @@ async function receivingData(message) {
       serverState.serverMode = SERVER_MODE_STD;
 
     return logAndReplyOK(msg);
-
   } catch (error) {
     console.log(error);
-    return logAndReplyError("13",msg);
+    return logAndReplyError("13", msg);
   }
 }
 
