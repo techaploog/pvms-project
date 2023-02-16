@@ -57,11 +57,6 @@ async function receivingData(message) {
     // Incorrect "Format" of Serial No.
     if (isNaN(recvSR)) return logAndReplyError("13", msg);
 
-    // check BF Seq Data Conversion
-    // check tracking point
-    if (isNaN(recvBC) || !TRACK_POINTS.includes(tp))
-      return logAndReplyError("13", msg);
-
     // ---- Check Message Serial Number ----------------------
     if (recvSR !== 0) {
       if (recvSR === serialNo) {
@@ -82,6 +77,12 @@ async function receivingData(message) {
       serverState.serialNo = recvSR;
       return logAndReplyOK(msg);
     }
+
+    // check BF Seq Data Conversion
+    // check tracking point
+    if (isNaN(recvBC) || !TRACK_POINTS.includes(tp))
+      return logAndReplyError("13", msg);
+      
 
     // TODO: Modify his block when need to store other message type.
     if (msg.type[0] === "0") {
