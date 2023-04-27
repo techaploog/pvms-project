@@ -1,8 +1,8 @@
 require("dotenv").config();
 
 const {
-  getLastALCTracking,
-  extractTA,
+  getLastInputSeq,
+  extractTrimSeq,
   extractWBS,
 } = require("./models/client.model");
 // const {makeCalculation} = require('./controller/client.controller');
@@ -22,8 +22,8 @@ const seqDiff = (input, trim) => {
 };
 
 const testInterval = async () => {
-  let trackData = await getLastALCTracking();
-  let scrapData = await extractTA();
+  let trackData = await getLastInputSeq();
+  let scrapData = await extractTrimSeq();
   let wbs = await extractWBS();
 
   let lastSeq = trackData ? trackData.data?.bcSeq : undefined;

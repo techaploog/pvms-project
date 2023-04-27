@@ -3,7 +3,7 @@
 ## Status
    Client side : `Developing..`.
 
-   Server side : `Testing`.
+   Server side : `Completed..`.
 
 ## Reqirements
    [NodeJs](https://nodejs.org/en/) : `^19.0.0`.

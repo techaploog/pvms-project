@@ -67,7 +67,6 @@ async function receivingData(message) {
       }
     }
 
-
     // ---- Check BC DATA ----------------------
     // check message length (After Check Serial Number)
     if (!checkMsgLenght(message)) return logAndReplyError("76", msg);

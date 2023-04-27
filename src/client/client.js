@@ -1,47 +1,47 @@
-const net = require('net');
+const net = require("net");
+require("dotenv").config();
 
-require('dotenv').config();
-
-const {extractData} = require('./data');
+const HOST = process.env.PVMS_CLIENT_DESC_IP;
+const PORT = Number(process.env.PVMS_CLIENT_DESC_PORT);
 
 const destination = {
-    host:process.env.PVMS_DESC_IP,
-    port:Number(process.env.PVMS_DESC_PORT),
-    localPort:Number(process.env.PVMS_LOCAL_PORT),
+  host: HOST,
+  port: PORT,
+  localPort: Number(process.env.PVMS_CLIENT_LOCAL_PORT),
 };
 const dataFrequency = 30000;
 
+
 const client = net.connect(destination);
-client.on('connect', () => {
-    console.log(`Connected to PVMS server ... `)
-    console.log(` + START!! (send data every : ${dataFrequency/1000} secondes)`)
+client.on("connect", () => {
+  console.log(`Connected to ${HOST}:${PORT} ... `);
+  console.log(
+    ` + START!! (send data every : ${dataFrequency / 1000} secondes)`
+  );
 
-    const intervalID = setInterval(async () => {
-        //TODO:
-        //
-        // const data = await extractData();
-        // const firstRow = data[0].splice(0,2);
+  const intervalID = setInterval(async () => {
+    //TODO:
+        
 
-        // // log to console
-        // console.log(` > Send : ${firstRow}`);
+    // TODO: send data to server
+    // client.write(firstRow.join('-').toString());
+  }, dataFrequency);
 
-        // // send data to server
-        // client.write(firstRow.join('-').toString());
+  client.on("data", (buffer) => {
+    const receiveData = buffer.toString("utf-8");
+    console.log("[DEBUG] RECEIVE :",receiveData)
+  });
 
-    },dataFrequency);
+  client.on("close", () => {
+    console.log(` - Disconnected from server side.`);
+    clearInterval(intervalID);
+  });
 
-    client.on('close',()=>{
-        console.log(` - Disconnected from server side.`);
-        clearInterval(intervalID);
-    })
-
-    client.on('error',()=>{
-        clearInterval(intervalID);
-    })
+  client.on("error", () => {
+    clearInterval(intervalID);
+  });
 });
 
-
-client.on('error', () => {
-    console.log(` ! Connection error`);
+client.on("error", () => {
+  console.log(` ! Connection error`);
 });
-

@@ -6,9 +6,7 @@
     "client": "node src/client/client.js",
     "server": "node src/server/server.js",
     "server-pvms": "node src/server/server.js -p true",
-    "watchClient": "nodemon src/client/client.js",
-    "watchServer": "nodemon src/server/server.js",
-    "testClient": "nodemon src/client/client-sample.js"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -32,6 +30,7 @@
     "sqlite3": "^5.1.4"
   },
   "devDependencies": {
+    "jest": "^29.5.0",
     "nodemon": "^2.0.20"
   }
 }
