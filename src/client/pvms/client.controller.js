@@ -4,12 +4,12 @@ const {
   extractWBS,
 } = require("./client.model");
 
-const {seqDiff,createMsgStr} = require("./utils/client.utils");
+const { seqDiff, createMsgStr } = require("./utils/client.utils");
 
 const MSG_INIT = {
   receiver: "DF0100",
   sender: "LKA010",
-  serial: "0000",
+  serial: undefined,
   mode: "1",
   msgLength: "00140",
   procType: "92",
@@ -25,8 +25,7 @@ const MSG_INIT = {
   msg3: Array.from({ length: 47 }, () => " ").join(""),
 };
 
-let current_msg = {...MSG_INIT};
-
+let current_msg = { ...MSG_INIT };
 
 async function getCalculatedTA() {
   const trackData = await getLastInputSeq();
@@ -41,14 +40,15 @@ async function getCalculatedTA() {
   const scrapedData = await extractTrimSeq();
 
   const lastSeq = trackData ? trackData.data?.bcSeq : undefined;
-  const trimSeq = scrapedData[0][1].slice(2);
+  const trimSeq =
+    scrapedData.length > 0 ? scrapedData[0][1].slice(2) : undefined;
   const TA = seqDiff(lastSeq, trimSeq);
 
   return {
-    success: true,
+    success: !isNaN(TA),
     numVeh: TA,
   };
-};
+}
 
 async function getCalculatedWBS() {
   const wbs = await extractWBS();
@@ -56,51 +56,67 @@ async function getCalculatedWBS() {
   if (wbs) {
     return {
       success: true,
-      numVeh,
+      numVeh: Number(wbs),
     };
   }
 
   return {
     success: false,
-    numVeh: 0,
+    numVeh: undefined,
   };
-};
+}
 
-async function getMessageToSend(resend=false) {
-  if (resend){
+function getThisSerial(currentSerial, setSerial) {
+  if (setSerial) return String(setSerial).padStart(4, "0");
+
+  if (!currentSerial) return "0000";
+
+  const nextNum = Number(currentSerial) + 1;
+
+  if (nextNum >= 10000) {
+    return "0001";
+  } else {
+    return nextNum.toString().padStart(4, "0");
+  }
+}
+
+async function getMessageToSend(resend = false, setSerial = undefined) {
+  if (resend) {
     return createMsgStr(current_msg);
   }
 
   const ta = await getCalculatedTA();
   const wbs = await getCalculatedWBS();
 
-  if (!ta || !ta?.success){
-    console.log('[ERROR] > Cannot retrive T-A data.');
+  if (ta?.success === false) {
+    console.log("[ERROR] > Cannot retrive T-A data.");
+    return undefined;
   }
 
-  if (!wbs || !wbs?.success){
-    console.log('[ERROR] > Cannot retrive WBS data.');
+  if (wbs?.success === false) {
+    console.log("[ERROR] > Cannot retrive WBS data.");
+    return undefined;
   }
-  
+
   const {serial} = current_msg;
-  const nextNum = Number(serial) + 1;
-  const nextSerial = nextNum === 10000 ? "0001" : nextNum.toString().padStart(4,"0");
+  const thisSerial = getThisSerial(serial,setSerial);
 
   current_msg = {
     ...current_msg,
-    serial:nextSerial,
-    ta:String(ta).padStart(2,"0"),
-    wbs:String(wbs).padStart(2,"0"),
-  }
+    serial:thisSerial,
+    ta: String(ta?.numVeh).padStart(2, "0"),
+    wbs: String(wbs?.numVeh).padStart(2, "0"),
+  };
 
-  return createMsgStr(current_msg);
-};
+
+  return createMsgStr({ ...current_msg });
+}
 
 // function getData() {
 //   const {serial} = current_msg;
 //   const nextNum = Number(serial) + 1;
 //   const nextSerial = nextNum === 10000 ? "0001" : nextNum.toString().padStart(4,"0");
-  
+
 //   current_msg.serial = nextSerial
 
 //   return ({ ...current_msg });
@@ -108,7 +124,8 @@ async function getMessageToSend(resend=false) {
 
 module.exports = {
   // getData,
-  // getCalculatedTA,
-  // getCalculatedWBS,
+
+  getCalculatedTA,
+  getCalculatedWBS,
   getMessageToSend,
 };

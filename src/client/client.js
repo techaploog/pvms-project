@@ -1,6 +1,8 @@
 const net = require("net");
 require("dotenv").config();
 
+const {getMessageToSend} = require("./pvms/client.controller");
+
 const HOST = process.env.PVMS_CLIENT_DESC_IP;
 const PORT = Number(process.env.PVMS_CLIENT_DESC_PORT);
 
@@ -21,7 +23,11 @@ client.on("connect", () => {
 
   const intervalID = setInterval(async () => {
     //TODO:
-        
+    const msg = await getMessageToSend();
+
+    // ! Delete DEBUG after test
+    console.log("[DEBUG] sending ...");
+    console.log("[DEBUG] MSG :",msg);
 
     // TODO: send data to server
     // client.write(firstRow.join('-').toString());
@@ -29,6 +35,8 @@ client.on("connect", () => {
 
   client.on("data", (buffer) => {
     const receiveData = buffer.toString("utf-8");
+
+    // ! Delete DEBUG after test
     console.log("[DEBUG] RECEIVE :",receiveData)
   });
 

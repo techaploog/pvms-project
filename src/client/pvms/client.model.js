@@ -78,7 +78,7 @@ async function extractWBS() {
 
   return wbsValue;
 
-}
+};
 
 module.exports = {
   extractWBS,

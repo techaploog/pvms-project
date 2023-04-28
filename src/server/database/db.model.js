@@ -80,14 +80,15 @@ function dbCheckFile() {
 
 
 // GET THE LATEST ROW OF DATA
-async function dbLatestRow(trackPoint=null) {
+async function dbLatestRow(trackPoint=undefined, msgType="00") {
   if (! currentState.status) {
     return false
   }
 
   const latest = await new Promise((resolve,rejects)=>{
     const sql = `SELECT * FROM ${tableName} ` + 
-      `${trackPoint ? `WHERE trackPoint = '${trackPoint}' `: ""}` +
+      `WHERE msgType = '${msgType}' ` +
+      `${trackPoint ? `AND trackPoint = '${trackPoint}' `: ""}` +
       `ORDER BY serverTime DESC, id DESC LIMIT 1;`
 
     currentState.db.get(sql,(error,rows) => {
