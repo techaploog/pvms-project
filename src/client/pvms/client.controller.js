@@ -30,7 +30,7 @@ let current_msg = { ...MSG_INIT };
 async function getCalculatedTA() {
   const trackData = await getLastInputSeq();
 
-  if (!trackData?.isNew) {
+  if (!trackData?.data) {
     return {
       success: false,
       numVeh: undefined,

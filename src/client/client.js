@@ -45,12 +45,6 @@ const sendNotification = async (client, resend = false) => {
     client.write(msg);
     clientState.waitReplyCount += 1;
     console.log(`[${resend ? "R-":"  "}SEND] >>`, msg);
-  } else {
-    const mtnWebUrl = MTN_SERVER_URL.match(/\d+.\d+.\d+.\d+/);
-    console.log("[ERROR] Cannot create message to send.");
-    console.log(`   ->   Check ALC Receiver, if it is running?`);
-    console.log(`   ->   Check connection to MTN Server (${mtnWebUrl})`);
-    console.log(`   ->   Check connection to WBS file.`);
   }
 
   clientState.readyToSend = true;
@@ -83,7 +77,7 @@ client.on("connect", () => {
     clientState.waitReplyCount = 0;
 
     // ! DEBUG
-    console.log("REPLY :",replyMsg);
+    console.log("[REPLY] ",replyMsg);
 
     if (replyMsg === "00") {
     }
