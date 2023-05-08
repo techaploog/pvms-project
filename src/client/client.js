@@ -1,55 +1,108 @@
 const net = require("net");
 require("dotenv").config();
 
-const {getMessageToSend} = require("./pvms/client.controller");
+// const { REPLY_CODE } = require("./pvms/constant/pvms.constant");
 
+const { getMessageToSend, resetMessage } = require("./pvms/client.controller");
+
+// * CONFIG
 const HOST = process.env.PVMS_CLIENT_DESC_IP;
 const PORT = Number(process.env.PVMS_CLIENT_DESC_PORT);
+const DATA_FREQ = 30000;
+const MAX_WAIT_COUNT = 5;
+
+const INIT_STATE = {
+  waitReplyCount : 0,
+  readyToSend : true,
+};
 
 const destination = {
   host: HOST,
   port: PORT,
   localPort: Number(process.env.PVMS_CLIENT_LOCAL_PORT),
 };
-const dataFrequency = 30000;
 
+const clientState = {...INIT_STATE};
+
+
+// * =============
+
+const sendNotification = async (client, resend = false) => {
+  clientState.readyToSend = false;
+
+  if (clientState.waitReplyCount > MAX_WAIT_COUNT){
+    console.log("[ERROR] NO response from server side.");
+    console.log("[ERROR] Stop sending message.");
+    return ;
+  }else if (clientState.waitReplyCount > 0) {
+    resend = true;
+  }
+
+  const msg = await getMessageToSend(resend);
+  
+  if (msg) {
+    client.write(msg);
+    clientState.waitReplyCount += 1;
+    console.log(`[${resend ? "R-":"  "}SEND] >>`, msg);
+  } 
+
+  clientState.readyToSend = true;
+};
 
 const client = net.connect(destination);
+
 client.on("connect", () => {
   console.log(`Connected to ${HOST}:${PORT} ... `);
-  console.log(
-    ` + START!! (send data every : ${dataFrequency / 1000} secondes)`
-  );
+  console.log(` + START!! (send data every : ${DATA_FREQ / 1000} secondes)`);
 
-  const intervalID = setInterval(async () => {
-    //TODO:
-    const msg = await getMessageToSend();
+  // INIT Sending
+  resetMessage();
+  clientState.waitReplyCount = 0;
+  sendNotification(client);
 
-    // ! Delete DEBUG after test
-    console.log("[DEBUG] sending ...");
-    console.log("[DEBUG] MSG :",msg);
+  // Send data every 30 seconds.
+  const intervalID = setInterval(()=>{
+    const {readyToSend} = clientState;
+    if (readyToSend){
+        sendNotification(client);
+    }
+  },DATA_FREQ);
 
-    // TODO: send data to server
-    // client.write(firstRow.join('-').toString());
-  }, dataFrequency);
-
+  // when receive reply
   client.on("data", (buffer) => {
-    const receiveData = buffer.toString("utf-8");
+    const replyMsg = buffer.toString("utf-8");
 
-    // ! Delete DEBUG after test
-    console.log("[DEBUG] RECEIVE :",receiveData)
+    // Reset clientState.waitReplyCount
+    clientState.waitReplyCount = 0;
+
+    if (replyMsg === "00") {
+    }
+
+    if (replyMsg === "R0"){
+      sendNotification(client,resend=true);
+    }
+
+
   });
 
   client.on("close", () => {
     console.log(` - Disconnected from server side.`);
+    console.log(' - Re-Run this service when server side is ready.')
+    resetMessage();
+    clientState = {...INIT_STATE};
     clearInterval(intervalID);
   });
 
   client.on("error", () => {
+    console.log(` - Error from server side.`);
+    console.log(' - Re-Run this service when server side is ready.')
+    resetMessage();
+    clientState = {...INIT_STATE};
     clearInterval(intervalID);
   });
 });
 
 client.on("error", () => {
-  console.log(` ! Connection error`);
+  console.log(` - Cannot connect to server.`);
+  console.log(' - Re-Run this service when server side is ready.')
 });

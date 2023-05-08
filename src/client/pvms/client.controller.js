@@ -112,19 +112,13 @@ async function getMessageToSend(resend = false, setSerial = undefined) {
   return createMsgStr({ ...current_msg });
 }
 
-// function getData() {
-//   const {serial} = current_msg;
-//   const nextNum = Number(serial) + 1;
-//   const nextSerial = nextNum === 10000 ? "0001" : nextNum.toString().padStart(4,"0");
-
-//   current_msg.serial = nextSerial
-
-//   return ({ ...current_msg });
-// }
+function resetMessage() {
+  current_msg = {...MSG_INIT};
+}
 
 module.exports = {
   // getData,
-
+  resetMessage,
   getCalculatedTA,
   getCalculatedWBS,
   getMessageToSend,
