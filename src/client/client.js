@@ -6,6 +6,7 @@ require("dotenv").config();
 const { getMessageToSend, resetMessage } = require("./pvms/client.controller");
 
 // * CONFIG
+const MTN_SERVER_URL = process.env.PVMS_CLIENT_SRC_URL;
 const HOST = process.env.PVMS_CLIENT_DESC_IP;
 const PORT = Number(process.env.PVMS_CLIENT_DESC_PORT);
 const DATA_FREQ = 30000;
@@ -32,7 +33,7 @@ const sendNotification = async (client, resend = false) => {
 
   if (clientState.waitReplyCount > MAX_WAIT_COUNT){
     console.log("[ERROR] NO response from server side.");
-    console.log("[ERROR] Stop sending message.");
+    console.log("   ->   Stop sending message.");
     return ;
   }else if (clientState.waitReplyCount > 0) {
     resend = true;
@@ -44,7 +45,13 @@ const sendNotification = async (client, resend = false) => {
     client.write(msg);
     clientState.waitReplyCount += 1;
     console.log(`[${resend ? "R-":"  "}SEND] >>`, msg);
-  } 
+  } else {
+    const mtnWebUrl = MTN_SERVER_URL.match(/\d+.\d+.\d+.\d+/);
+    console.log("[ERROR] Cannot create message to send.");
+    console.log(`   ->   Check ALC Receiver, if it is running?`);
+    console.log(`   ->   Check connection to MTN Server (${mtnWebUrl})`);
+    console.log(`   ->   Check connection to WBS file.`);
+  }
 
   clientState.readyToSend = true;
 };

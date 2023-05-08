@@ -46,7 +46,7 @@ async function getCalculatedTA() {
 
   return {
     success: !isNaN(TA),
-    numVeh: TA,
+    numVeh: TA > 99 ? 99 : TA,
   };
 }
 
@@ -54,9 +54,10 @@ async function getCalculatedWBS() {
   const wbs = await extractWBS();
 
   if (wbs) {
+    const wbsNum = Number(wbs);
     return {
       success: true,
-      numVeh: Number(wbs),
+      numVeh: wbsNum > 99 ? 99 : wbsNum,
     };
   }
 
