@@ -82,6 +82,9 @@ client.on("connect", () => {
 
     const {replyCode} = replyObj;
 
+    // ! DEGUB
+    console.log(replyObj);
+
     if (replyCode === "00"){
       console.log(`[ REPLY] -> ${replyCode} : ${replyObj.replyDesc}.`)
     } else if (replyCode === "R0"){

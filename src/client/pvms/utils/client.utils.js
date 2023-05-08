@@ -60,6 +60,8 @@ function createMsgStr(msgObj) {
 
 function replyMsgToJSON (message) {
 
+  const replyCode = message.slice(24,26);
+
   const data = {
     receiverName:message.slice(0,6),
     senderName:message.slice(6,12),
@@ -67,13 +69,11 @@ function replyMsgToJSON (message) {
     mode:message.slice(16,17),
     length:message.slice(17,22),
     procType:message.slice(22,24),
-    replyCode:message.slice(24,26)
+    replyCode,
+    replyDesc:REPLY_CODE_DESC[replyCode],
   }
 
-  return ({
-    ...data,
-    replyDesc:REPLY_CODE_DESC[data.replyCode],
-  });
+  return data;
 }
 
 module.exports = {
