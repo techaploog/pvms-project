@@ -1,3 +1,13 @@
+const REPLY_CODE_DESC = {
+  "00":"Normal",
+  "RO":"Resend request",
+  "10":"Computation error",
+  "12":"Other error",
+  "60":"No schedule file",
+  "75":"Serial No. error",
+  "76":"Length error"
+}
+
 function seqDiff(input, trim) {
   try {
     let lastSeq = Number(input);
@@ -49,6 +59,7 @@ function createMsgStr(msgObj) {
 }
 
 function replyMsgToJSON (message) {
+
   const data = {
     receiverName:message.slice(0,6),
     senderName:message.slice(6,12),
@@ -56,9 +67,13 @@ function replyMsgToJSON (message) {
     mode:message.slice(16,17),
     length:message.slice(17,22),
     procType:message.slice(22,24),
-    replyResult:message.slice(24,26)
+    replyCode:message.slice(24,26)
   }
-  return data;
+
+  return ({
+    ...data,
+    replyDesc:REPLY_CODE_DESC[data.replyCode],
+  });
 }
 
 module.exports = {

@@ -34,8 +34,9 @@ const sendNotification = async (client, resend = false) => {
   clientState.readyToSend = false;
 
   if (clientState.waitReplyCount > MAX_WAIT_COUNT){
-    console.log("[ERROR] NO response from server side.");
-    console.log("   ->   Stop sending message.");
+    console.log("[ERROR]");
+    console.log(" - NO response from server side.")
+    console.log(" - Stop sending message.");
     return ;
   }else if (clientState.waitReplyCount > 0) {
     resend = true;
@@ -79,24 +80,23 @@ client.on("connect", () => {
     // Reset clientState.waitReplyCount
     clientState.waitReplyCount = 0;
 
-    // ! DEBUG
-    console.log("[ REPLY] ");
-    console.log(replyObj);
+    const {replyCode} = replyObj;
 
-    const {replyResult} = replyObj;
-
-    if (replyResult === "00") {
-
+    if (replyCode === "R0"){
+      sendNotification(client,resend=true);
     }
 
-    if (replyResult === "R0"){
-      sendNotification(client,resend=true);
+    if (replyCode !== "00") {
+      console.log("[ REPLY]");
+      console.log(` - CODE : ${replyCode} (${replyObj.replyDesc})`);
+      client.closed();
     }
 
   });
 
   client.on("close", () => {
-    console.log(` - Disconnected from server side.`);
+    console.log("[ERROR]");
+    console.log(' - Disconnected from server side.');
     console.log(' - Re-Run this service when server side is ready.')
     resetMessage();
     clientState = {...INIT_STATE};
@@ -104,7 +104,8 @@ client.on("connect", () => {
   });
 
   client.on("error", () => {
-    console.log(` - Error from server side.`);
+    console.log("[ERROR]");
+    console.log(' - Error from server side.');
     console.log(' - Re-Run this service when server side is ready.')
     resetMessage();
     clientState = {...INIT_STATE};
@@ -113,6 +114,7 @@ client.on("connect", () => {
 });
 
 client.on("error", () => {
-  console.log(` - Cannot connect to server.`);
+  console.log("[ERROR]");
+  console.log(' - Cannot connect to server.');
   console.log(' - Re-Run this service when server side is ready.')
 });
