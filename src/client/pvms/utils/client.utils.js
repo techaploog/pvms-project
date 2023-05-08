@@ -1,6 +1,6 @@
 const REPLY_CODE_DESC = {
   "00":"Normal",
-  "RO":"Resend request",
+  "R0":"Resend request",
   "10":"Computation error",
   "12":"Other error",
   "60":"No schedule file",

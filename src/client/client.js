@@ -91,7 +91,7 @@ client.on("connect", () => {
       sendNotification(client,resend=true);
     }else {
       try{
-        client.closed();
+        client.end();
       } catch (err){
         console.log(err);
       }
