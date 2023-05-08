@@ -25,7 +25,7 @@ const destination = {
   localPort: Number(process.env.PVMS_CLIENT_LOCAL_PORT),
 };
 
-const clientState = { ...INIT_STATE };
+let clientState = { ...INIT_STATE };
 
 // * =============
 
@@ -97,18 +97,18 @@ client.on("data", (buffer) => {
     console.log(" - Re-Run this service when server side is ready.");
 
     resetMessage();
-    // clientState = { ...INIT_STATE };
-    clearInterval(intervalID);
+    clientState = { ...INIT_STATE };
   }
 });
 
 client.on("close", () => {
-  console.log("[ERROR]");
-  console.log(" - Disconnected from server side.");
-  console.log(" - Re-Run this service when server side is ready.");
+  if(!client.closed){
+    console.log("[ERROR]");
+    console.log(" - Disconnected from server side.");
+    console.log(" - Re-Run this service when server side is ready.");
+  }
   resetMessage();
   clientState = { ...INIT_STATE };
-  clearInterval(intervalID);
 });
 
 client.on("error", () => {
@@ -120,11 +120,7 @@ client.on("error", () => {
     console.log(" - Error from receiver side.");
     console.log(" - Re-Run this service when server side is ready.");
   }
-  try {
-    resetMessage();
-    clientState = { ...INIT_STATE };
-    clearInterval(intervalID);
-  } catch (err) {
-    console.log(err);
-  }
+  resetMessage();
+  clientState = { ...INIT_STATE };
+
 });
