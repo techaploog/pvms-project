@@ -74,6 +74,8 @@ client.on("connect", () => {
   clientState.waitReplyCount = 0;
   sendNotification(client);
 
+  console.log(client.connect)
+
 });
 
 // when receive reply
@@ -94,14 +96,13 @@ client.on("data", (buffer) => {
   } else if (replyCode === "R0"){
     sendNotification(client,resend=true);
   }else {
-    try{
-      client.emit("close")
-    } catch (err){
-      console.log(err);
-    }
     console.log(`[ REPLY] << ${replyCode} : ${replyObj.replyDesc}.`);
     console.log(' - Disconnected.');
-    console.log(' - Re-Run this service when server side is ready.')
+    console.log(' - Re-Run this service when server side is ready.');
+
+    resetMessage();
+    clientState = {...INIT_STATE};
+    clearInterval(intervalID);
   }
 
 });
