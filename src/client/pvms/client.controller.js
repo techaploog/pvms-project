@@ -114,7 +114,7 @@ async function getMessageToSend(resend = false, setSerial = undefined) {
 }
 
 function resetMessage() {
-  current_msg = {...MSG_INIT};
+  current_msg = { ...MSG_INIT };
 }
 
 module.exports = {
