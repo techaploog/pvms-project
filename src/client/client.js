@@ -75,13 +75,15 @@ client.on("connect", () => {
     // Reset clientState.waitReplyCount
     clientState.waitReplyCount = 0;
 
+    // ! DEBUG
+    console.log("REPLY :",replyMsg);
+
     if (replyMsg === "00") {
     }
 
     if (replyMsg === "R0"){
       sendNotification(client,resend=true);
     }
-
 
   });
 
