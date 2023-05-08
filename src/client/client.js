@@ -82,14 +82,18 @@ client.on("connect", () => {
 
     const {replyCode} = replyObj;
 
-    if (replyCode === "R0"){
+    if (replyCode === "00"){
+      console.log(`[ REPLY] -> ${replyCode} : ${replyObj.replyDesc}.`)
+    } else if (replyCode === "R0"){
       sendNotification(client,resend=true);
-    }
-
-    if (replyCode !== "00") {
-      console.log("[ REPLY]");
-      console.log(` - CODE : ${replyCode} (${replyObj.replyDesc})`);
+    }else {
+      console.log(`[ REPLY] -> ${replyCode} : ${replyObj.replyDesc}.`);
       client.closed();
+      
+      setTimeout(()=>{
+        console.log('closed')
+
+      },3000)
     }
 
   });
