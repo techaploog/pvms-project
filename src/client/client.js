@@ -5,6 +5,8 @@ require("dotenv").config();
 
 const { getMessageToSend, resetMessage } = require("./pvms/client.controller");
 
+const { replyMsgToJSON } = require("./pvms/utils/client.utils");
+
 // * CONFIG
 const MTN_SERVER_URL = process.env.PVMS_CLIENT_SRC_URL;
 const HOST = process.env.PVMS_CLIENT_DESC_IP;
@@ -71,18 +73,23 @@ client.on("connect", () => {
 
   // when receive reply
   client.on("data", (buffer) => {
-    const replyMsg = buffer.toString("utf-8");
+    const replyStr = buffer.toString("utf-8");
+    const replyObj = replyMsgToJSON(replyStr);
 
     // Reset clientState.waitReplyCount
     clientState.waitReplyCount = 0;
 
     // ! DEBUG
-    console.log("[REPLY] ",replyMsg);
+    console.log("[ REPLY] ");
+    console.log(replyObj);
 
-    if (replyMsg === "00") {
+    const {replyResult} = replyObj;
+
+    if (replyResult === "00") {
+
     }
 
-    if (replyMsg === "R0"){
+    if (replyResult === "R0"){
       sendNotification(client,resend=true);
     }
 

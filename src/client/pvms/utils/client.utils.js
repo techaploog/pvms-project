@@ -48,7 +48,21 @@ function createMsgStr(msgObj) {
   return msgStr;
 }
 
+function replyMsgToJSON (message) {
+  const data = {
+    receiverName:message.slice(0,6),
+    senderName:message.slice(6,12),
+    serialNo:message.slice(12,16),
+    mode:message.slice(16,17),
+    length:message.slice(17,22),
+    procType:message.slice(22,24),
+    replyResult:message.slice(24,26)
+  }
+  return data;
+}
+
 module.exports = {
   seqDiff,
   createMsgStr,
+  replyMsgToJSON,
 };
