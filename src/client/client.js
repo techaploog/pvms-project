@@ -97,7 +97,7 @@ client.on("data", (buffer) => {
     console.log(" - Re-Run this service when server side is ready.");
 
     resetMessage();
-    clientState = { ...INIT_STATE };
+    // clientState = { ...INIT_STATE };
     clearInterval(intervalID);
   }
 });
