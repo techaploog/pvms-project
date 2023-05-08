@@ -87,13 +87,14 @@ client.on("connect", () => {
     } else if (replyCode === "R0"){
       sendNotification(client,resend=true);
     }else {
-      console.log(`[ REPLY] -> ${replyCode} : ${replyObj.replyDesc}.`);
-      client.closed();
-      
-      setTimeout(()=>{
-        console.log('closed')
-
-      },3000)
+      try{
+        client.closed();
+      } catch (err){
+        console.log(err);
+      }
+      console.log(`[ REPLY] << ${replyCode} : ${replyObj.replyDesc}.`);
+      console.log(' - Disconnected.');
+      console.log(' - Re-Run this service when server side is ready.')
     }
 
   });
@@ -109,7 +110,7 @@ client.on("connect", () => {
 
   client.on("error", () => {
     console.log("[ERROR]");
-    console.log(' - Error from server side.');
+    console.log(' - Error from receiver side.');
     console.log(' - Re-Run this service when server side is ready.')
     resetMessage();
     clientState = {...INIT_STATE};
