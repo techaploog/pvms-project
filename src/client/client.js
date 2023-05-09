@@ -1,14 +1,11 @@
 const net = require("net");
 require("dotenv").config();
 
-// const { REPLY_CODE } = require("./pvms/constant/pvms.constant");
-
 const { getMessageToSend, resetMessage } = require("./pvms/client.controller");
 
 const { replyMsgToJSON } = require("./pvms/utils/client.utils");
 
 // * CONFIG
-const MTN_SERVER_URL = process.env.PVMS_CLIENT_SRC_URL;
 const HOST = process.env.PVMS_CLIENT_DESC_IP;
 const PORT = Number(process.env.PVMS_CLIENT_DESC_PORT);
 const DATA_FREQ = 30000;
@@ -63,22 +60,21 @@ client.on("connect", () => {
   console.log(`Connected to ${HOST}:${PORT} ... `);
   console.log(` + START!! (send data every : ${DATA_FREQ / 1000} secondes)`);
 
-  const {readyToSend,intervalID} = clientState;
-
   // INIT Sending
   resetMessage();
   clientState.waitReplyCount = 0;
   sendNotification(client);
 
   // Send data every 30 seconds.
-  if (intervalID) {
+  if (clientState.intervalID) {
     clearInterval(intervalID);
   }
 
   clientState.intervalID = setInterval(() => {
-  if (readyToSend) {
+  if (clientState.readyToSend) {
     sendNotification(client);
   }
+
 }, DATA_FREQ);
 
 });
@@ -94,7 +90,10 @@ client.on("data", (buffer) => {
   const { replyCode } = replyObj;
 
   // ! DEGUB
+  console.log("-------------------------");
+  console.log('DEBUG : Reply Msg')
   console.log(replyObj);
+  console.log("-------------------------");
 
   if (replyCode === "00") {
     console.log(`[ REPLY] -> ${replyCode} : ${replyObj.replyDesc}.`);
@@ -106,8 +105,8 @@ client.on("data", (buffer) => {
     console.log(" - Re-Run this service when server side is ready.");
 
     resetMessage();
-    clientState = { ...INIT_STATE };
     clearInterval(clientState.intervalID);
+    clientState = { ...INIT_STATE };
   }
 });
 
@@ -118,8 +117,8 @@ client.on("close", () => {
     console.log(" - Re-Run this service when server side is ready.");
   }
   resetMessage();
-  clientState = { ...INIT_STATE };
   clearInterval(clientState.intervalID);
+  clientState = { ...INIT_STATE };
 });
 
 client.on("error", () => {
@@ -132,7 +131,7 @@ client.on("error", () => {
     console.log(" - Re-Run this service when server side is ready.");
   }
   resetMessage();
-  clientState = { ...INIT_STATE };
   clearInterval(clientState.intervalID);
+  clientState = { ...INIT_STATE };
 
 });
