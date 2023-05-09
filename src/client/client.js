@@ -26,7 +26,6 @@ const destination = {
 let clientState = { ...INIT_STATE };
 
 // * =============
-
 const sendNotification = async (client, resend = false) => {
   clientState.readyToSend = false;
 
@@ -49,13 +48,13 @@ const sendNotification = async (client, resend = false) => {
 
   clientState.readyToSend = true;
 };
-
-
 // * ==============
-// * Client Algorithms
+
+
+// * Client side algorithms
 const client = net.connect(destination);
 
-
+// * on:connect
 client.on("connect", () => {
   console.log(`Connected to ${HOST}:${PORT} ... `);
   console.log(` + START!! (send data every : ${DATA_FREQ / 1000} secondes)`);
@@ -65,21 +64,19 @@ client.on("connect", () => {
   clientState.waitReplyCount = 0;
   sendNotification(client);
 
-  // Send data every 30 seconds.
   if (clientState.intervalID) {
     clearInterval(intervalID);
   }
 
+  // Send data every 30 seconds.
   clientState.intervalID = setInterval(() => {
-  if (clientState.readyToSend) {
-    sendNotification(client);
-  }
-
-}, DATA_FREQ);
-
+    if (clientState.readyToSend) {
+      sendNotification(client);
+    }
+  }, DATA_FREQ);
 });
 
-// when receive reply
+// * on:data
 client.on("data", (buffer) => {
   const replyStr = buffer.toString("utf-8");
   const replyObj = replyMsgToJSON(replyStr);
@@ -88,19 +85,18 @@ client.on("data", (buffer) => {
   clientState.waitReplyCount = 0;
 
   const { replyCode } = replyObj;
+  console.log(`[ REPLY] << ${replyCode} : ${replyObj.replyDesc}.`);
 
   // ! DEGUB
   console.log("-------------------------");
-  console.log('DEBUG : Reply Msg')
+  console.log("DEBUG : Reply Msg");
   console.log(replyObj);
   console.log("-------------------------");
+  // ! ----
 
-  if (replyCode === "00") {
-    console.log(`[ REPLY] -> ${replyCode} : ${replyObj.replyDesc}.`);
-  } else if (replyCode === "R0") {
+  if (replyCode === "R0") {
     sendNotification(client, (resend = true));
-  } else {
-    console.log(`[ REPLY] << ${replyCode} : ${replyObj.replyDesc}.`);
+  } else if (replyCode !== "00") {
     console.log(" - Disconnected.");
     console.log(" - Re-Run this service when server side is ready.");
 
@@ -110,8 +106,9 @@ client.on("data", (buffer) => {
   }
 });
 
+// * on:close
 client.on("close", () => {
-  if(!client.closed){
+  if (!client.closed) {
     console.log("[ERROR]");
     console.log(" - Disconnected from server side.");
     console.log(" - Re-Run this service when server side is ready.");
@@ -121,6 +118,7 @@ client.on("close", () => {
   clientState = { ...INIT_STATE };
 });
 
+// * on:error
 client.on("error", () => {
   console.log("[ERROR]");
   if (client.closed) {
@@ -133,5 +131,4 @@ client.on("error", () => {
   resetMessage();
   clearInterval(clientState.intervalID);
   clientState = { ...INIT_STATE };
-
 });
