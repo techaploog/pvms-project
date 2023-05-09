@@ -17,6 +17,7 @@ const MAX_WAIT_COUNT = 5;
 const INIT_STATE = {
   waitReplyCount: 0,
   readyToSend: false,
+  intervalID: undefined,
 };
 
 const destination = {
@@ -52,26 +53,34 @@ const sendNotification = async (client, resend = false) => {
   clientState.readyToSend = true;
 };
 
-// Send data every 30 seconds.
-const intervalID = setInterval(() => {
-  const { readyToSend } = clientState;
-  if (readyToSend) {
-    sendNotification(client);
-  }
-}, DATA_FREQ);
 
 // * ==============
 // * Client Algorithms
 const client = net.connect(destination);
 
+
 client.on("connect", () => {
   console.log(`Connected to ${HOST}:${PORT} ... `);
   console.log(` + START!! (send data every : ${DATA_FREQ / 1000} secondes)`);
+
+  const {readyToSend,intervalID} = clientState;
 
   // INIT Sending
   resetMessage();
   clientState.waitReplyCount = 0;
   sendNotification(client);
+
+  // Send data every 30 seconds.
+  if (intervalID) {
+    clearInterval(intervalID);
+  }
+
+  clientState.intervalID = setInterval(() => {
+  if (readyToSend) {
+    sendNotification(client);
+  }
+}, DATA_FREQ);
+
 });
 
 // when receive reply
@@ -98,6 +107,7 @@ client.on("data", (buffer) => {
 
     resetMessage();
     clientState = { ...INIT_STATE };
+    clearInterval(clientState.intervalID);
   }
 });
 
@@ -109,6 +119,7 @@ client.on("close", () => {
   }
   resetMessage();
   clientState = { ...INIT_STATE };
+  clearInterval(clientState.intervalID);
 });
 
 client.on("error", () => {
@@ -122,5 +133,6 @@ client.on("error", () => {
   }
   resetMessage();
   clientState = { ...INIT_STATE };
+  clearInterval(clientState.intervalID);
 
 });
