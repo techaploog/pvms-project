@@ -86,12 +86,12 @@ client.on("data", (buffer) => {
 
   const { replyCode } = replyObj;
   console.log(`[ REPLY] << ${replyCode} : ${replyObj.replyDesc}.`);
+  console.log("-------------------------");
 
   // ! DEGUB
-  console.log("-------------------------");
-  console.log("DEBUG : Reply Msg");
+  console.log("***DEBUG : Reply Msg***");
   console.log(replyObj);
-  console.log("-------------------------");
+  console.log("*******");
   // ! ----
 
   if (replyCode === "R0") {
