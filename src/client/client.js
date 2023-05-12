@@ -66,8 +66,8 @@ client.on("connect", () => {
   // production
   sendNotification(client);
 
-  // test serial number
-  sendNotification(client,resend=false,setSerial=9998);
+  // ! test serial number
+  // sendNotification(client,resend=false,setSerial=9998);
 
   if (clientState.intervalID) {
     clearInterval(intervalID);
