@@ -69,7 +69,6 @@ client.on("connect", () => {
   // production
   sendNotification(client);
 
-
   if (clientState.intervalID) {
     clearInterval(intervalID);
   }

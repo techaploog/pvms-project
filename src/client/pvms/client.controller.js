@@ -13,7 +13,7 @@ const MSG_INIT = {
   mode: "1",
   msgLength: "00140",
   procType: "92",
-  procRes: " ",
+  procRes: "  ",
   noOfProc: "001",
   shopCode: "A_",
   lineNo: "0001",
@@ -22,7 +22,7 @@ const MSG_INIT = {
   ta: "00",
   msg2: Array.from({ length: 3 }, () => " ").join(""),
   wbs: "00",
-  msg3: Array.from({ length: 47 }, () => " ").join(""),
+  msg3: Array.from({ length: 117 }, () => " ").join(""),
 };
 
 let current_msg = { ...MSG_INIT };
