@@ -26,9 +26,9 @@ const MSG_INIT = {
   lineNo: "0001",
   procName: "T002",
   msg1: Array.from({ length: 3 }, () => " ").join(""),
-  ta: "00",
+  ta: 0,
   msg2: Array.from({ length: 3 }, () => " ").join(""),
-  wbs: "00",
+  wbs: 0,
   msg3: Array.from({ length: 47 }, () => " ").join(""),
 };
 
@@ -71,7 +71,7 @@ describe("Test getCalculatedTA function", () => {
     expect(testResult).toEqual(result);
   });
 
-  it("isNew = false : It should return {success:false, numVeh:undefined}", async () => {
+  it("isNew = false : It should return data", async () => {
     const sameInput = {
       ...mockGetLastInputSeq,
       isNew: false,
@@ -80,7 +80,7 @@ describe("Test getCalculatedTA function", () => {
     getLastInputSeq.mockResolvedValue(sameInput);
     extractTrimSeq.mockResolvedValue(mockExtractTrimSeq);
 
-    const result = { success: false, numVeh: undefined };
+    const result = { success: true, numVeh: 5 };
     const testResult = await getCalculatedTA();
 
     expect(testResult).toEqual(result);
@@ -117,6 +117,23 @@ describe("Test getCalculatedWBS function", () => {
     const testResult = await getCalculatedWBS();
     expect(testResult).toEqual(result);
   });
+
+  it("WBS is not number : It should return {success:false, numVeh:undefined}", async () => {
+    extractWBS.mockResolvedValue("ABCD");
+
+    const result = { success: false, numVeh: undefined };
+    const testResult = await getCalculatedWBS();
+    expect(testResult).toEqual(result);
+  });
+
+  it("WBS > 99 : It should return {success:true, numVeh:99}", async() => {
+    extractWBS.mockResolvedValue("1000");
+    
+    const result = {success:true, numVeh:99};
+    const testResult = await getCalculatedWBS();
+    expect(testResult).toEqual(result);
+  });
+
 });
 
 describe("Test getMessageToSend function", () => {
