@@ -26,7 +26,7 @@ const destination = {
 let clientState = { ...INIT_STATE };
 
 // * =============
-const sendNotification = async (client, resend = false) => {
+const sendNotification = async (client, resend = false, setSerial=undefined) => {
   clientState.readyToSend = false;
 
   if (clientState.waitReplyCount > MAX_WAIT_COUNT) {
@@ -38,7 +38,7 @@ const sendNotification = async (client, resend = false) => {
     resend = true;
   }
 
-  const msg = await getMessageToSend(resend);
+  const msg = await getMessageToSend(resend,setSerial);
 
   if (msg) {
     client.write(msg);
@@ -62,7 +62,12 @@ client.on("connect", () => {
   // INIT Sending
   resetMessage();
   clientState.waitReplyCount = 0;
+
+  // production
   sendNotification(client);
+
+  // test serial number
+  sendNotification(client,resend=false,setSerial=9998);
 
   if (clientState.intervalID) {
     clearInterval(intervalID);

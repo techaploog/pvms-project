@@ -74,7 +74,9 @@ function getThisSerial(currentSerial, setSerial) {
 
   const nextNum = Number(currentSerial) + 1;
 
-  if (nextNum >= 10000) {
+  if (nextNum <= 0 || isNaN(nextNum)){
+    return "0000";
+  } else if (nextNum >= 10000) {
     return "0001";
   } else {
     return nextNum.toString().padStart(4, "0");
