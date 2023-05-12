@@ -106,11 +106,9 @@ async function getMessageToSend(resend = false) {
   if (!serial){
     updateSerial();
   }
-  // const thisSerial = getThisSerial(serial,setSerial);
 
   current_msg = {
     ...current_msg,
-    // serial:thisSerial,
     ta: String(ta?.numVeh).padStart(2, "0"),
     wbs: String(wbs?.numVeh).padStart(2, "0"),
   };
@@ -137,7 +135,6 @@ function resetMessage() {
 }
 
 module.exports = {
-  // getData,
   updateSerial,
   resetMessage,
   getCalculatedTA,
