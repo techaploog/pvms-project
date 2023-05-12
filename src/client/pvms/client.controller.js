@@ -83,7 +83,7 @@ function getThisSerial(currentSerial, setSerial) {
   }
 }
 
-async function getMessageToSend(resend = false, setSerial = undefined) {
+async function getMessageToSend(resend = false) {
   if (resend) {
     return createMsgStr(current_msg);
   }
@@ -102,17 +102,30 @@ async function getMessageToSend(resend = false, setSerial = undefined) {
   }
 
   const {serial} = current_msg;
-  const thisSerial = getThisSerial(serial,setSerial);
+  
+  if (!serial){
+    updateSerial();
+  }
+  // const thisSerial = getThisSerial(serial,setSerial);
 
   current_msg = {
     ...current_msg,
-    serial:thisSerial,
+    // serial:thisSerial,
     ta: String(ta?.numVeh).padStart(2, "0"),
     wbs: String(wbs?.numVeh).padStart(2, "0"),
   };
 
 
   return createMsgStr({ ...current_msg });
+}
+
+function updateSerial (manualSerial=undefined) {
+  const {serial} = current_msg;
+  const thisSerial = getThisSerial(serial,manualSerial);
+  current_msg = {
+    ...current_msg,
+    serial:thisSerial,
+  };
 }
 
 function resetMessage() {
@@ -125,6 +138,7 @@ function resetMessage() {
 
 module.exports = {
   // getData,
+  updateSerial,
   resetMessage,
   getCalculatedTA,
   getCalculatedWBS,

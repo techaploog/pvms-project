@@ -1,7 +1,7 @@
 const net = require("net");
 require("dotenv").config();
 
-const { getMessageToSend, resetMessage } = require("./pvms/client.controller");
+const { getMessageToSend, resetMessage,updateSerial } = require("./pvms/client.controller");
 
 const { replyMsgToJSON } = require("./pvms/utils/client.utils");
 
@@ -63,11 +63,12 @@ client.on("connect", () => {
   resetMessage();
   clientState.waitReplyCount = 0;
 
+  // ! test serial number
+  // updateSerial(9998);
+
   // production
   sendNotification(client);
 
-  // test serial number
-  sendNotification(client,resend=false,setSerial=9998);
 
   if (clientState.intervalID) {
     clearInterval(intervalID);
@@ -101,6 +102,8 @@ client.on("data", (buffer) => {
 
   if (replyCode === "R0") {
     sendNotification(client, (resend = true));
+  } else if (replyCode === "00"){
+    updateSerial();
   } else if (replyCode !== "00") {
     console.log(" - Disconnected.");
     console.log(" - Re-Run this service when server side is ready.");
